@@ -53,7 +53,7 @@
  */
 
 
-#include "hardware.h"
+#include "gpu.h"
 #import <MetalKit/MetalKit.h>
 #include <libkern/OSCacheControl.h>
 #include "hook.h"
@@ -237,7 +237,7 @@ void hardware_init(void)
     
     flag_hardware_init = true;
     binary_data dummy = {0};
-    get_results_from_gpu(dummy);
+    get_results_from_gpu(dummy, 0);
     flag_hardware_init = false;
 }
 
@@ -294,31 +294,15 @@ bool compile_shader_to_metallib(char* sourcecode, binary_data* data)
         return false;
     }
     
-    read_file(temp_path, data);
+    read_file(temp_path, data, false);
     
     return true;
 }
 
-bool get_results_from_gpu(binary_data code)
+bool get_results_from_gpu(binary_data code, test_output* output)
 {
-    /*gettimeofday(&tval_before, NULL);
-
-    size_t count = argc >= 2 ? atoi(argv[1]) : 32;
-    size_t outputBufferSize = argc >= 3 ? atoi(argv[2]) : (32 * sizeof(uint32_t)) * count;
-
-    char *buffer0_filename = argc >= 4 ? argv[3] : NULL;
-    char *buffer1_filename = argc >= 5 ? argv[4] : NULL;
-
-    long long expected_sum = 0;
-
-    gettimeofday(&tval_after, NULL);
-    timersub(&tval_after, &tval_before, &tval_result);
-    gettimeofday(&tval_before, NULL);*/
-    
     enable_code_hook(code);
 
-    int outputBufferSize = 100;
-    int count = 32;
     NSError *error = nil;
 
     id<MTLDevice> device = MTLCreateSystemDefaultDevice();
@@ -353,45 +337,25 @@ bool get_results_from_gpu(binary_data code)
     if (!commandQueue)
         return false;
 
-#define NUM_BUFFERS 8
-    id<MTLBuffer> outputBuffers[NUM_BUFFERS];
-    for (int i = 0; i < NUM_BUFFERS; i++) {
-        outputBuffers[i] = [device newBufferWithLength:outputBufferSize options:MTLResourceStorageModeShared];
-        memset(outputBuffers[i].contents, 0, outputBufferSize);
+    int BUFFER_COUNT = 8;
+    id<MTLBuffer> outputBuffers[BUFFER_COUNT];
+    for (int i = 0; i < BUFFER_COUNT; i++) {
+        outputBuffers[i] = [device newBufferWithLength:TEST_BUFFER_SIZE options:MTLResourceStorageModeShared];
+        memset(outputBuffers[i].contents, 0, TEST_BUFFER_SIZE * sizeof(uint32_t));
     }
-
-    /*if (buffer0_filename) {
-        FILE *f = fopen(buffer0_filename, "rb");
-        if (f) {
-            size_t replaced = fread(outputBuffers[0].contents, 1, outputBufferSize, f);
-            fclose(f);
-        } else {
-            fprintf(stderr, "failed to open %s\n", buffer0_filename);
-        }
-    }
-
-    if (buffer1_filename) {
-        FILE *f = fopen(buffer1_filename, "rb");
-        if (f) {
-            size_t replaced = fread(outputBuffers[1].contents, 1, outputBufferSize, f);
-            fclose(f);
-        } else {
-            fprintf(stderr, "failed to open %s\n", buffer0_filename);
-        }
-    }*/
 
     id<MTLCommandBuffer> commandBuffer = commandQueue.commandBuffer;
     id<MTLComputeCommandEncoder> encoder = commandBuffer.computeCommandEncoder;
     
     [encoder setComputePipelineState:computePipelineState];
 
-
-    for (int i = 0; i < NUM_BUFFERS; i++) {
+    for (int i = 0; i < BUFFER_COUNT; i++) {
         [encoder setBuffer:outputBuffers[i] offset:0 atIndex:i];
     }
 
     [encoder setThreadgroupMemoryLength:0x100 atIndex:0];
 
+    int count = TEST_BUFFER_SIZE;
     MTLSize threadgroupsPerGrid = MTLSizeMake(count, 1, 1);
 
     NSUInteger threads = computePipelineState.maxTotalThreadsPerThreadgroup;
@@ -410,24 +374,30 @@ bool get_results_from_gpu(binary_data code)
 
     if (!flag_hardware_init)
     {
-        printf("[\n");
-        for (int r = 0; r < 31; r++) {
-            printf("[");
-            assert(r/4 < NUM_BUFFERS);
+        if (output)
+        {
             for (int simd = 0; simd < count; simd++) {
-                uint32_t *outputs = (uint32_t*)outputBuffers[r/4].contents;
-                printf("0x%x,", outputs[(r & 3) + (simd * 4)]);
+                for (int r = 0; r < 4; r++) {
+                    uint32_t *outputs = (uint32_t*)outputBuffers[r/4].contents;
+                    output->buffer0[simd][r] = outputs[(r & 3) + (simd * 4)];
+                }
             }
-            printf("],\n");
         }
-        printf("]\n");
+        else
+        {
+            printf("[\n");
+            for (int r = 0; r < 4; r++) {
+                printf("[");
+                assert(r/4 < TEST_BUFFER_COUNT);
+                for (int simd = 0; simd < count; simd++) {
+                    //uint32_t *outputs = (uint32_t*)outputBuffers[r/4].contents;
+                    //printf("0x%x,", outputs[(r & 3) + (simd * 4)]);
+                }
+                printf("],\n");
+            }
+            printf("]\n");
+        }
     }
-
-    /*FILE *f = fopen("buffer0.bin", "wb");
-    if (f) {
-        fwrite(outputBuffers[0].contents, 1, outputBufferSize, f);
-        fclose(f);
-    }*/
 
     return true;
 }

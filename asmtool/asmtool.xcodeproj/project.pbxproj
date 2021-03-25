@@ -7,11 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F7D38E0260C78B800A48D1C /* tests.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38DF260C78B800A48D1C /* tests.c */; };
+		1F7D38E5260D1E5000A48D1C /* assembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E4260D1E5000A48D1C /* assembler_text.c */; };
+		1F7D38E9260D1E5B00A48D1C /* disassembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */; };
 		1FF2932126069F1500DFF4B3 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932026069F1500DFF4B3 /* main.c */; };
 		1FF2932426069F1F00DFF4B3 /* test.metal in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932326069F1F00DFF4B3 /* test.metal */; };
-		1FF2932926069F3900DFF4B3 /* assembler.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932826069F3900DFF4B3 /* assembler.c */; };
+		1FF2932926069F3900DFF4B3 /* assembler_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932826069F3900DFF4B3 /* assembler_binary.c */; };
 		1FF2932E26069F4800DFF4B3 /* helper.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932D26069F4800DFF4B3 /* helper.c */; };
-		1FF2933226069F5000DFF4B3 /* disassembler.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2933126069F5000DFF4B3 /* disassembler.c */; };
+		1FF2933226069F5000DFF4B3 /* disassembler_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2933126069F5000DFF4B3 /* disassembler_binary.c */; };
 		1FF2933526069F6100DFF4B3 /* hardware.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2933426069F6100DFF4B3 /* hardware.m */; };
 		1FF2934C2606A59500DFF4B3 /* libhook.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF293402606A32B00DFF4B3 /* libhook.dylib */; };
 		1FF293522606DC9F00DFF4B3 /* metallib.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF293512606DC9F00DFF4B3 /* metallib.c */; };
@@ -30,15 +33,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1F7D38DF260C78B800A48D1C /* tests.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = tests.c; sourceTree = "<group>"; };
+		1F7D38E4260D1E5000A48D1C /* assembler_text.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = assembler_text.c; sourceTree = "<group>"; };
+		1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disassembler_text.c; sourceTree = "<group>"; };
 		1F8E0AFE260C69B300CED54D /* gpu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gpu.h; sourceTree = "<group>"; };
 		1FF292F626069DC400DFF4B3 /* asmtool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asmtool; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FF2932026069F1500DFF4B3 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		1FF2932326069F1F00DFF4B3 /* test.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = test.metal; sourceTree = "<group>"; };
 		1FF2932626069F2A00DFF4B3 /* instructions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = instructions.h; sourceTree = "<group>"; };
-		1FF2932826069F3900DFF4B3 /* assembler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = assembler.c; sourceTree = "<group>"; };
+		1FF2932826069F3900DFF4B3 /* assembler_binary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = assembler_binary.c; sourceTree = "<group>"; };
 		1FF2932C26069F4800DFF4B3 /* helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helper.h; sourceTree = "<group>"; };
 		1FF2932D26069F4800DFF4B3 /* helper.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = helper.c; sourceTree = "<group>"; };
-		1FF2933126069F5000DFF4B3 /* disassembler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disassembler.c; sourceTree = "<group>"; };
+		1FF2933126069F5000DFF4B3 /* disassembler_binary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disassembler_binary.c; sourceTree = "<group>"; };
 		1FF2933426069F6100DFF4B3 /* hardware.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = hardware.m; sourceTree = "<group>"; };
 		1FF293402606A32B00DFF4B3 /* libhook.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libhook.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FF2934E2606A65300DFF4B3 /* hook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hook.h; sourceTree = "<group>"; };
@@ -77,17 +83,20 @@
 		1FF292F826069DC400DFF4B3 /* asmtool */ = {
 			isa = PBXGroup;
 			children = (
-				1FF2932026069F1500DFF4B3 /* main.c */,
-				1FF2932326069F1F00DFF4B3 /* test.metal */,
-				1FF2932626069F2A00DFF4B3 /* instructions.h */,
-				1FF2932826069F3900DFF4B3 /* assembler.c */,
-				1FF2932C26069F4800DFF4B3 /* helper.h */,
+				1FF2932826069F3900DFF4B3 /* assembler_binary.c */,
+				1F7D38E4260D1E5000A48D1C /* assembler_text.c */,
+				1FF2933126069F5000DFF4B3 /* disassembler_binary.c */,
+				1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */,
 				1FF2932D26069F4800DFF4B3 /* helper.c */,
-				1FF2933126069F5000DFF4B3 /* disassembler.c */,
-				1FF2933426069F6100DFF4B3 /* hardware.m */,
-				1FF2934E2606A65300DFF4B3 /* hook.h */,
+				1FF2932026069F1500DFF4B3 /* main.c */,
 				1FF293512606DC9F00DFF4B3 /* metallib.c */,
+				1F7D38DF260C78B800A48D1C /* tests.c */,
 				1F8E0AFE260C69B300CED54D /* gpu.h */,
+				1FF2932C26069F4800DFF4B3 /* helper.h */,
+				1FF2934E2606A65300DFF4B3 /* hook.h */,
+				1FF2932626069F2A00DFF4B3 /* instructions.h */,
+				1FF2933426069F6100DFF4B3 /* hardware.m */,
+				1FF2932326069F1F00DFF4B3 /* test.metal */,
 			);
 			path = asmtool;
 			sourceTree = "<group>";
@@ -157,10 +166,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FF2932126069F1500DFF4B3 /* main.c in Sources */,
-				1FF2933226069F5000DFF4B3 /* disassembler.c in Sources */,
+				1FF2933226069F5000DFF4B3 /* disassembler_binary.c in Sources */,
 				1FF2932E26069F4800DFF4B3 /* helper.c in Sources */,
+				1F7D38E5260D1E5000A48D1C /* assembler_text.c in Sources */,
+				1F7D38E0260C78B800A48D1C /* tests.c in Sources */,
 				1FF2933526069F6100DFF4B3 /* hardware.m in Sources */,
-				1FF2932926069F3900DFF4B3 /* assembler.c in Sources */,
+				1F7D38E9260D1E5B00A48D1C /* disassembler_text.c in Sources */,
+				1FF2932926069F3900DFF4B3 /* assembler_binary.c in Sources */,
 				1FF2932426069F1F00DFF4B3 /* test.metal in Sources */,
 				1FF293522606DC9F00DFF4B3 /* metallib.c in Sources */,
 			);

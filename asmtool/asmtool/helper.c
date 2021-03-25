@@ -3,20 +3,24 @@
 #include <unistd.h>
 #include <sys/fcntl.h>
 
-bool read_file(const char* path, binary_data* data)
+bool read_file(const char* path, binary_data* data, bool text)
 {
+    int offset = text ? 1 : 0;
     int fd = open(path, O_RDONLY);
     if(fd == -1) {
-        return false;
+        error("Cant read file %s\n", path)
     }
     data->len = (int)lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
     
-    data->data = malloc(data->len + 1);
+    data->data = malloc(data->len + offset);
     read(fd, data->data, data->len);
     
-    data->data[data->len] = 0; /* Null termiante, for strings... */
-    data->len++;
+    if (text)
+    {
+        data->data[data->len] = 0; /* Null termiante, for strings... */
+        data->len++;
+    }
     
     close(fd);
     return true;

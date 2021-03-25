@@ -5,7 +5,9 @@
 
 enum opcodes
 {
-    OPCODE_UNIFORM_STORE = 0x45,
+    OPCODE_RET = 0x14,
+    OPCODE_STORE = 0x45,
+    OPCODE_MOV = 0x62,
 };
 
 #endif /* instructions_h */
