@@ -1,0 +1,323 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1FF2932126069F1500DFF4B3 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932026069F1500DFF4B3 /* main.c */; };
+		1FF2932426069F1F00DFF4B3 /* test.metal in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932326069F1F00DFF4B3 /* test.metal */; };
+		1FF2932926069F3900DFF4B3 /* assembler.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932826069F3900DFF4B3 /* assembler.c */; };
+		1FF2932E26069F4800DFF4B3 /* helper.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932D26069F4800DFF4B3 /* helper.c */; };
+		1FF2933226069F5000DFF4B3 /* disassembler.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2933126069F5000DFF4B3 /* disassembler.c */; };
+		1FF2933526069F6100DFF4B3 /* hardware.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2933426069F6100DFF4B3 /* hardware.m */; };
+		1FF2934C2606A59500DFF4B3 /* libhook.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF293402606A32B00DFF4B3 /* libhook.dylib */; };
+		1FF293522606DC9F00DFF4B3 /* metallib.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF293512606DC9F00DFF4B3 /* metallib.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1FF292F426069DC400DFF4B3 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		1F8E0AFE260C69B300CED54D /* gpu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gpu.h; sourceTree = "<group>"; };
+		1FF292F626069DC400DFF4B3 /* asmtool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asmtool; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FF2932026069F1500DFF4B3 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		1FF2932326069F1F00DFF4B3 /* test.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = test.metal; sourceTree = "<group>"; };
+		1FF2932626069F2A00DFF4B3 /* instructions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = instructions.h; sourceTree = "<group>"; };
+		1FF2932826069F3900DFF4B3 /* assembler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = assembler.c; sourceTree = "<group>"; };
+		1FF2932C26069F4800DFF4B3 /* helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helper.h; sourceTree = "<group>"; };
+		1FF2932D26069F4800DFF4B3 /* helper.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = helper.c; sourceTree = "<group>"; };
+		1FF2933126069F5000DFF4B3 /* disassembler.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disassembler.c; sourceTree = "<group>"; };
+		1FF2933426069F6100DFF4B3 /* hardware.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = hardware.m; sourceTree = "<group>"; };
+		1FF293402606A32B00DFF4B3 /* libhook.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libhook.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FF2934E2606A65300DFF4B3 /* hook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hook.h; sourceTree = "<group>"; };
+		1FF293512606DC9F00DFF4B3 /* metallib.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = metallib.c; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1FF292F326069DC400DFF4B3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FF2934C2606A59500DFF4B3 /* libhook.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1FF292ED26069DC400DFF4B3 = {
+			isa = PBXGroup;
+			children = (
+				1FF292F826069DC400DFF4B3 /* asmtool */,
+				1FF292F726069DC400DFF4B3 /* Products */,
+				1FF2933F2606A32B00DFF4B3 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		1FF292F726069DC400DFF4B3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1FF292F626069DC400DFF4B3 /* asmtool */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1FF292F826069DC400DFF4B3 /* asmtool */ = {
+			isa = PBXGroup;
+			children = (
+				1FF2932026069F1500DFF4B3 /* main.c */,
+				1FF2932326069F1F00DFF4B3 /* test.metal */,
+				1FF2932626069F2A00DFF4B3 /* instructions.h */,
+				1FF2932826069F3900DFF4B3 /* assembler.c */,
+				1FF2932C26069F4800DFF4B3 /* helper.h */,
+				1FF2932D26069F4800DFF4B3 /* helper.c */,
+				1FF2933126069F5000DFF4B3 /* disassembler.c */,
+				1FF2933426069F6100DFF4B3 /* hardware.m */,
+				1FF2934E2606A65300DFF4B3 /* hook.h */,
+				1FF293512606DC9F00DFF4B3 /* metallib.c */,
+				1F8E0AFE260C69B300CED54D /* gpu.h */,
+			);
+			path = asmtool;
+			sourceTree = "<group>";
+		};
+		1FF2933F2606A32B00DFF4B3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1FF293402606A32B00DFF4B3 /* libhook.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1FF292F526069DC400DFF4B3 /* asmtool */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1FF292FD26069DC400DFF4B3 /* Build configuration list for PBXNativeTarget "asmtool" */;
+			buildPhases = (
+				1FF292F226069DC400DFF4B3 /* Sources */,
+				1FF292F326069DC400DFF4B3 /* Frameworks */,
+				1FF292F426069DC400DFF4B3 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = asmtool;
+			productName = asmtool;
+			productReference = 1FF292F626069DC400DFF4B3 /* asmtool */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1FF292EE26069DC400DFF4B3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1240;
+				TargetAttributes = {
+					1FF292F526069DC400DFF4B3 = {
+						CreatedOnToolsVersion = 12.4;
+					};
+				};
+			};
+			buildConfigurationList = 1FF292F126069DC400DFF4B3 /* Build configuration list for PBXProject "asmtool" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1FF292ED26069DC400DFF4B3;
+			productRefGroup = 1FF292F726069DC400DFF4B3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1FF292F526069DC400DFF4B3 /* asmtool */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1FF292F226069DC400DFF4B3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FF2932126069F1500DFF4B3 /* main.c in Sources */,
+				1FF2933226069F5000DFF4B3 /* disassembler.c in Sources */,
+				1FF2932E26069F4800DFF4B3 /* helper.c in Sources */,
+				1FF2933526069F6100DFF4B3 /* hardware.m in Sources */,
+				1FF2932926069F3900DFF4B3 /* assembler.c in Sources */,
+				1FF2932426069F1F00DFF4B3 /* test.metal in Sources */,
+				1FF293522606DC9F00DFF4B3 /* metallib.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1FF292FB26069DC400DFF4B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		1FF292FC26069DC400DFF4B3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		1FF292FE26069DC400DFF4B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		1FF292FF26069DC400DFF4B3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1FF292F126069DC400DFF4B3 /* Build configuration list for PBXProject "asmtool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1FF292FB26069DC400DFF4B3 /* Debug */,
+				1FF292FC26069DC400DFF4B3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1FF292FD26069DC400DFF4B3 /* Build configuration list for PBXNativeTarget "asmtool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1FF292FE26069DC400DFF4B3 /* Debug */,
+				1FF292FF26069DC400DFF4B3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1FF292EE26069DC400DFF4B3 /* Project object */;
+}
