@@ -37,7 +37,7 @@ static binary_data get_instruction_data(binary_data data, int bytes)
     return ret;
 }
 
-static bool disassemble_instr_data_store(binary_data data, instruction* instruction, int* size)
+static bool disassemble_data_store(binary_data data, instruction* instruction, int* size)
 {
     *size = 8;
     data = get_instruction_data(data, *size); // TODO: L flag
@@ -54,7 +54,7 @@ static bool disassemble_instr_data_store(binary_data data, instruction* instruct
     return true;
 }
 
-static bool disassemble_instr_ret(binary_data data, instruction* instruction, int* size)
+static bool disassemble_ret(binary_data data, instruction* instruction, int* size)
 {
     *size = 2;
     data = get_instruction_data(data, *size); // TODO: L flag
@@ -65,7 +65,7 @@ static bool disassemble_instr_ret(binary_data data, instruction* instruction, in
     return true;
 }
 
-static bool disassemble_instr_mov(binary_data data, instruction* instruction, int* size)
+static bool disassemble_mov(binary_data data, instruction* instruction, int* size)
 {
     *size = 6;
     data = get_instruction_data(data, *size); // TODO: L flag
@@ -80,7 +80,7 @@ static bool disassemble_instr_mov(binary_data data, instruction* instruction, in
     return true;
 }
 
-bool disassemble_bytecode_to_structs(binary_data data, instruction** instructions)
+bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instructions)
 {
     int size;
     int pos = 0;
@@ -89,10 +89,10 @@ bool disassemble_bytecode_to_structs(binary_data data, instruction** instruction
     
     instruction* instruction_last = 0;
     
-    while (pos < data.len)
+    while (pos < bytecode.len)
     {
         binary_data data_opcode;
-        binary_data_sub(data, &data_opcode, pos, 1);
+        binary_data_sub(bytecode, &data_opcode, pos, 1);
         int opcode = GET_BITS(data_opcode, 0, 6);
         
         instruction* instruction = init_instruction();
@@ -108,21 +108,18 @@ bool disassemble_bytecode_to_structs(binary_data data, instruction** instruction
         }
         
         binary_data data_instruction;
-        binary_data_sub(data, &data_instruction, pos, data.len - pos);
+        binary_data_sub(bytecode, &data_instruction, pos, bytecode.len - pos);
         
         switch (opcode)
         {
             case OPCODE_STORE:
-                if (!disassemble_instr_data_store(data_instruction, instruction, &size))
-                    return false;
+                check(disassemble_data_store(data_instruction, instruction, &size));
                 break;
             case OPCODE_RET:
-                if (!disassemble_instr_ret(data_instruction, instruction, &size))
-                    return false;
+                check(disassemble_ret(data_instruction, instruction, &size));
                 break;
             case OPCODE_MOV:
-                if (!disassemble_instr_mov(data_instruction, instruction, &size))
-                    return false;
+                check(disassemble_mov(data_instruction, instruction, &size));
                 break;
             default:
                 error("Unknown opcode %d\n", opcode);

@@ -70,6 +70,12 @@ int main(int argc, const char* argv[]) {
                     return 1;
                 }
                 printf("%s\n", data_disassembly.data);
+                
+                instruction* instructions_asm;
+                if(!assemble_text_to_structs(data_disassembly, &instructions_asm))
+                {
+                    return 1;
+                }
             }
         }
         return 0;

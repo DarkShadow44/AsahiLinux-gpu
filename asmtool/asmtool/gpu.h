@@ -99,12 +99,13 @@ static inline void destroy_instruction_list(instruction* list)
 
 /* disassembler */
 
-bool disassemble_bytecode_to_structs(binary_data data, instruction** instructions);
+bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instructions);
 bool disassemble_structs_to_text(instruction* instructions, binary_data* text);
 
 
 /* assembler */
 
-
+bool assemble_text_to_structs(binary_data text, instruction** instructions);
+bool assemble_structs_to_bytecode(instruction* instructions, binary_data* bytecode);
 
 #endif /* gpu_h */

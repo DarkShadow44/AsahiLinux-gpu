@@ -27,4 +27,16 @@ void dump_to_hex(unsigned char* data, int len);
     printf(err, ##__VA_ARGS__); \
     return false;
 
+#define check(value) \
+    if (!(value)) \
+    { \
+        return false; \
+    }
+
+#define validate(value, err, ...) \
+    if (!(value)) \
+    { \
+        error(err, ##__VA_ARGS__) \
+    }
+
 #endif /* helper_h */
