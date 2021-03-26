@@ -22,7 +22,7 @@ static bool assemble_data_store(char buffer[10][20], instruction* instruction)
 {
     instruction->type = INSTRUCTION_STORE;
     
-    check(get_destination(buffer[1], &instruction->data.load_store.reg));
+   //TODO check(get_destination(buffer[1], &instruction->data.load_store.reg));
     
     return true;
 }

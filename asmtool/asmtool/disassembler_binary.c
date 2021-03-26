@@ -37,20 +37,102 @@ static binary_data get_instruction_data(binary_data data, int bytes)
     return ret;
 }
 
+operation_src make_memory_offset(int value, int flag_sign1, int flag_sign2)
+{
+    operation_src ret = {0};
+    if (flag_sign1)
+    {
+        ret.flags = OPERATION_FLAG_SIGN_EXTEND;
+        ret.type = OPERATION_SOURCE_IMMEDIATE;
+        ret.value = value;
+        return ret;
+    }
+    
+    assert((value & 1) == 0);
+    assert(value < 0x100);
+    
+    if (!flag_sign2)
+    {
+        ret.flags = OPERATION_FLAG_SIGN_EXTEND;
+    }
+    ret.type = OPERATION_SOURCE_REG32;
+    ret.value = value >> 1;
+    
+    return ret;
+}
+
+operation_src make_memory_base(int value, int flag)
+{
+    assert((value & 1) == 0);
+
+    operation_src ret = {0};
+    ret.type = flag ? OPERATION_SOURCE_UNIFORM64 : OPERATION_SOURCE_REG64;
+    ret.value = value >> 1;
+    
+    return ret;
+}
+
+operation_src make_memory_reg(int value, int flag)
+{
+    assert((value & 1) == 0);
+
+    operation_src ret = {0};
+    if (flag)
+    {
+        ret.type = OPERATION_SOURCE_REG32;
+        ret.value = value >> 1;
+    }
+    else
+    {
+        ret.type = OPERATION_SOURCE_REG16;
+        ret.value = value;
+    }
+    
+    return ret;
+}
+
 static bool disassemble_data_store(binary_data data, instruction* instruction, int* size)
 {
     *size = 8;
     data = get_instruction_data(data, *size); // TODO: L flag
-    int reg1 = GET_BITS(data, 20, 23);
-    int reg2 = GET_BITS(data, 32, 35);
+    int format1 = GET_BITS(data, 7, 9);
+    int reg1 = GET_BITS(data, 10, 15);
+    int base1 = GET_BITS(data, 16, 19);
+    int offset1 = GET_BITS(data, 20, 23);
+    int flag_offset_immediate = GET_BITS(data, 24, 24);
+    int flag_offset_signextend = GET_BITS(data, 25, 25);
+    int u1 = GET_BITS(data, 26, 26);
+    int flag_base = GET_BITS(data, 27, 27);
+    int u3 = GET_BITS(data, 28, 29);
+    int u2 = GET_BITS(data, 30, 30);
+    // int unk1 = GET_BITS(data, 31, 31);
+    int offset2 = GET_BITS(data, 32, 35);
+    int base2 = GET_BITS(data, 36, 39);
+    int reg2 = GET_BITS(data, 40, 41);
     int shift = GET_BITS(data, 42, 43);
-    int reg3 = GET_BITS(data, 56, 63);
+    int u4 = GET_BITS(data, 44, 46);
+    // int flag_long = GET_BITS(data, 47, 47);
+    int format2 = GET_BITS(data, 48, 48);
+    int flag_reg = GET_BITS(data, 49, 49);
+    int u5 = GET_BITS(data, 50, 51);
+    int mask = GET_BITS(data, 52, 55);
+    int offset3 = GET_BITS(data, 56, 63);
  
-    int reg = reg1 + (reg2 << 4) + (reg3 << 8);
-    reg = reg << shift;
+    int offset = offset1 + (offset2 << 4) + (offset3 << 8);
+    int reg = reg1 + (reg2 << 6);
+    int base = base1 + (base2 << 4);
+    int format = format1 + (format2 << 3);
+    int u = u1 + (u2 << 1) + (u3 << 2) + (u4 << 4) + (u5 << 7);
+    (void)u; // TODO
+    
+    offset = offset << shift;
     
     instruction->type = INSTRUCTION_STORE;
-    instruction->data.load_store.reg = reg;
+    instruction->data.load_store.memory_offset = make_memory_offset(offset, flag_offset_immediate, flag_offset_signextend);
+    instruction->data.load_store.memory_base = make_memory_base(base, flag_base);
+    instruction->data.load_store.memory_reg = make_memory_reg(reg, flag_reg);
+    instruction->data.load_store.format = format;
+    instruction->data.load_store.mask = mask;
     return true;
 }
 

@@ -29,7 +29,7 @@ bool get_bytecode_from_metallib(binary_data data, binary_data* data_out);
 
 /* instructions */
 
-enum instruction_type {
+typedef enum _instruction_type {
     INSTRUCTION_LOAD,
     INSTRUCTION_STORE,
     INSTRUCTION_MOV,
@@ -37,7 +37,28 @@ enum instruction_type {
     INSTRUCTION_IMUL,
     INSTRUCTION_RET,
     //...
-};
+} instruction_type;
+
+typedef enum _operation_src_type
+{
+    OPERATION_SOURCE_IMMEDIATE,
+    OPERATION_SOURCE_REG16,
+    OPERATION_SOURCE_REG32,
+    OPERATION_SOURCE_REG64,
+    OPERATION_SOURCE_UNIFORM64,
+} operation_src_type;
+
+typedef enum _operation_src_flags
+{
+    OPERATION_FLAG_SIGN_EXTEND = 1 << 0,
+} operation_src_flags;
+
+typedef struct _operation_src
+{
+    operation_src_type type;
+    operation_src_flags flags;
+    int value;
+} operation_src;
 
 typedef struct _instruction_data_iadd {
     int source;
@@ -52,7 +73,11 @@ typedef struct _instruction_data_imul {
 } instruction_data_imul;
 
 typedef struct _instruction_data_load_store {
-    int reg;
+    operation_src memory_offset;
+    operation_src memory_base;
+    operation_src memory_reg;
+    int format;
+    int mask;
 } instruction_data_load_store;
 
 typedef struct _instruction_ret {
@@ -64,19 +89,19 @@ typedef struct _instruction_mov {
     int value;
 } instruction_mov;
 
-union instruction_data
+typedef union _instruction_data
 {
     instruction_data_iadd iadd;
     instruction_data_imul imul;
     instruction_data_load_store load_store;
     instruction_ret ret;
     instruction_mov mov;
-};
+} instruction_data;
 
 typedef struct _instruction {
     struct _instruction* next;
-    enum instruction_type type;
-    union instruction_data data;
+    instruction_type type;
+    instruction_data data;
 } instruction;
 
 static inline instruction* init_instruction()

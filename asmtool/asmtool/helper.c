@@ -120,3 +120,14 @@ void dump_to_hex(unsigned char* data, int len)
     }
     printf("\n");
 }
+
+int count_bits(int value)
+{
+    int ret = 0;
+    while(value > 0)
+    {
+        ret += value & 1;
+        value >>= 1;
+    }
+    return ret;
+}

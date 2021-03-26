@@ -23,6 +23,8 @@ void dump_to_binary(unsigned char* data, int len);
 void dump_to_dec(unsigned char* data, int len);
 void dump_to_hex(unsigned char* data, int len);
 
+int count_bits(int value);
+
 #define error(err, ...) \
     printf(err, ##__VA_ARGS__); \
     return false;
