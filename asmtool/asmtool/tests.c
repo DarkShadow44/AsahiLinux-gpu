@@ -10,6 +10,16 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
     
     validate(output_expected_len == 256, "Output length is %d\n", output_expected_len);
     
+    instruction* instructions;
+    binary_data data_bytecode;
+    data_bytecode.data = data;
+    data_bytecode.len = len;
+    check(disassemble_bytecode_to_structs(data_bytecode, &instructions));
+    
+    binary_data data_disassembly = {0};
+    check(disassemble_structs_to_text(instructions, &data_disassembly, true));
+    printf("%s\n", data_disassembly.data);
+    
     check(get_results_from_gpu(bytecode, &output_gpu));
     
     for (int i = 0; i < 16; i++)
@@ -23,12 +33,6 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
             }
         }
     }
-    
-    instruction* instructions;
-    binary_data data_bytecode;
-    data_bytecode.data = data;
-    data_bytecode.len = len;
-    check(disassemble_bytecode_to_structs(data_bytecode, &instructions));
     
     emu_state emu_state = {0};
     check(emulate_instructions(&emu_state, instructions));

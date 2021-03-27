@@ -96,6 +96,13 @@ static bool disassemble_mov(instruction* instruction, char* buffer)
     return true;
 }
 
+static bool disassemble_stop(instruction* instruction, char* buffer)
+{
+    sprintf(buffer, "stop");
+    
+    return true;
+}
+
 bool disassemble_structs_to_text(instruction* instructions, binary_data* text, bool print_offsets)
 {
     validate(text->data == 0, "");
@@ -121,6 +128,10 @@ bool disassemble_structs_to_text(instruction* instructions, binary_data* text, b
                 
             case INSTRUCTION_MOV:
                 check(disassemble_mov(instructions, buffer));
+                break;
+                
+            case INSTRUCTION_STOP:
+                check(disassemble_stop(instructions, buffer));
                 break;
                 
             default:
