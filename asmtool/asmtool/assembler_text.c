@@ -1,19 +1,30 @@
 #include "gpu.h"
 #include "instructions.h"
 
-static bool get_destination(char* text, int* dest)
+static bool make_operation_src(char* text, operation_src* src)
 {
-    validate(text[0] == 'r', "TODO\n");
-    *dest = atoi(&text[1]);
+    src->flags = 0;
+    if (text[0] == 'r')
+    {
+        src->type = OPERATION_SOURCE_REG32;
+        src->value = atoi(&text[1]);
+    }
+    else
+    {
+        src->type = OPERATION_SOURCE_IMMEDIATE;
+        src->value = atoi(text);
+    }
+    
     return true;
 }
 
 static bool assemble_mov(char buffer[10][20], instruction* instruction)
 {
     instruction->type = INSTRUCTION_MOV;
+    instruction_mov* instr = &instruction->data.mov;
     
-    check(get_destination(buffer[1], &instruction->data.mov.reg));
-    instruction->data.mov.value = atoi(buffer[2]);
+    check(make_operation_src(buffer[1], &instr->dest));
+    check(make_operation_src(buffer[2], &instr->source));
     
     return true;
 }

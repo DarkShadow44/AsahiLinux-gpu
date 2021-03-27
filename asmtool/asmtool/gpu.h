@@ -36,7 +36,7 @@ typedef enum _instruction_type {
     INSTRUCTION_IADD,
     INSTRUCTION_IMUL,
     INSTRUCTION_RET,
-    //...
+    INSTRUCTION_STOP,
 } instruction_type;
 
 typedef enum _operation_src_type
@@ -85,8 +85,8 @@ typedef struct _instruction_ret {
 } instruction_ret;
 
 typedef struct _instruction_mov {
-    int reg;
-    int value;
+    operation_src source;
+    operation_src dest;
 } instruction_mov;
 
 typedef union _instruction_data
@@ -134,5 +134,16 @@ bool disassemble_structs_to_text(instruction* instructions, binary_data* text, b
 
 bool assemble_text_to_structs(binary_data text, instruction** instructions);
 bool assemble_structs_to_bytecode(instruction* instructions, binary_data* bytecode);
+
+/* emulator */
+
+typedef struct _emu_state
+{
+    uint32_t reg[256];
+    uint32_t uniform[256];
+    test_output data;
+} emu_state;
+
+bool emulate_instructions(emu_state *state, instruction* instructions);
 
 #endif /* gpu_h */

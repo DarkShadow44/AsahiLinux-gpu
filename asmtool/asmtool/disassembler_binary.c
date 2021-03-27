@@ -91,6 +91,22 @@ operation_src make_memory_reg(int value, int flag)
     return ret;
 }
 
+operation_src make_aludst(int value, int flag)
+{
+    operation_src ret = {0};
+   if (flag & 2)
+   {
+       ret.type = OPERATION_SOURCE_REG32;
+       ret.value = value >> 1;
+   }
+   else
+   {
+       ret.type = OPERATION_SOURCE_REG16;
+       ret.value = value;
+   }
+    return ret;
+}
+
 static bool disassemble_data_store(binary_data data, instruction* instruction, int* size)
 {
     *size = 8;
@@ -151,14 +167,27 @@ static bool disassemble_mov(binary_data data, instruction* instruction, int* siz
 {
     *size = 6;
     data = get_instruction_data(data, *size); // TODO: L flag
+    int flag = GET_BITS(data, 7, 8);
     int reg1 = GET_BITS(data, 9, 14);
     int reg2 = GET_BITS(data, 44, 45);
     int reg = reg1 + (reg2 << 6);
     int value = GET_BITS(data, 16, 31);
     
     instruction->type = INSTRUCTION_MOV;
-    instruction->data.mov.reg = reg >> 1;
-    instruction->data.mov.value = value;
+    instruction->data.mov.dest = make_aludst(reg, flag);
+    instruction->data.mov.source.type = OPERATION_SOURCE_IMMEDIATE;
+    instruction->data.mov.source.value = value;
+    return true;
+}
+
+static bool disassemble_stop(binary_data data, instruction* instruction, int* size)
+{
+    *size = 2;
+    data = get_instruction_data(data, *size);
+    int value = GET_BITS(data, 0, 15);
+    validate(value == 0x88, "");
+    
+    instruction->type = INSTRUCTION_STOP;
     return true;
 }
 
@@ -202,6 +231,9 @@ bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instruc
                 break;
             case OPCODE_MOV:
                 check(disassemble_mov(data_instruction, instruction, &size));
+                break;
+            case OPCODE_STOP:
+                check(disassemble_stop(data_instruction, instruction, &size));
                 break;
             default:
                 error("Unknown opcode %d", opcode);

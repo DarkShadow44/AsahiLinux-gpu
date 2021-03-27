@@ -6,23 +6,53 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
     bytecode.data = data;
     bytecode.len = len;
     
-    test_output output;
+    test_output output_gpu = {0};
     
     validate(output_expected_len == 256, "Output length is %d\n", output_expected_len);
     
-    check(get_results_from_gpu(bytecode, &output));
+    check(get_results_from_gpu(bytecode, &output_gpu));
     
     for (int i = 0; i < 16; i++)
     {
         for (int j = 0; j < 4; j++)
         {
             int pos = i + j * 16;
-            if (output_expected[pos] != output.buffer0[i][j])
+            if (output_expected[pos] != output_gpu.buffer0[i][j])
             {
-                _error(file, line, "At %d: Expected %X, got %X\n", pos, output_expected[pos], output.buffer0[i][j]);
+                _error(file, line, "At %d: Expected %X, got %X\n", pos, output_expected[pos], output_gpu.buffer0[i][j]);
             }
         }
     }
+    
+    instruction* instructions;
+    binary_data data_bytecode;
+    data_bytecode.data = data;
+    data_bytecode.len = len;
+    check(disassemble_bytecode_to_structs(data_bytecode, &instructions));
+    
+    emu_state emu_state = {0};
+    check(emulate_instructions(&emu_state, instructions));
+    
+    for (int i = 0; i < 16; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            int pos = i + j * 16;
+            if (output_expected[pos] != emu_state.data.buffer0[i][j])
+            {
+                _error(file, line, "At %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.buffer0[i][j]);
+            }
+        }
+    }
+     
+/*
+    binary_data data_disassembly = {0};
+    check(disassemble_structs_to_text(instructions, &data_disassembly, true));
+    printf("%s\n", data_disassembly.data);
+
+    //instruction* instructions_asm;
+    //check(assemble_text_to_structs(data_disassembly, &instructions_asm));
+*/
     
     return true;
 }

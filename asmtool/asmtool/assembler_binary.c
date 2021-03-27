@@ -27,6 +27,21 @@ void SET_BITS(binary_data data, int start, int end, uint64_t value_new)
     }
 }
 
+static bool make_aludst(operation_src src, uint32_t* value, int* flags)
+{
+    *flags = 0;
+    switch (src.type) {
+        case OPERATION_SOURCE_REG32:
+            *flags |= 2;
+            *value = src.value << 1;
+            break;
+            
+        default:
+            error("Unhandled");
+    }
+    return true;
+}
+
 static binary_data make_instruction_data(binary_data data, int bytes)
 {
     binary_data ret;
@@ -57,14 +72,20 @@ bool assemble_mov(instruction* instruction, binary_data data, int* size)
     *size = 6;
     data = make_instruction_data(data, *size);
     
+    instruction_mov *instr = &instruction->data.mov;
+    
     SET_BITS(data, 0, 6, OPCODE_MOV);
     
-    int reg = instruction->data.mov.reg << 1;
+    uint32_t reg;
+    int flag;
+    check(make_aludst(instr->dest, &reg, &flag));
+    
     SET_BITS(data, 9, 14, reg);
     reg >>= 6;
     SET_BITS(data, 44, 45, reg);
     
-    int value = instruction->data.mov.reg;
+    validate(instr->source.type == OPERATION_SOURCE_IMMEDIATE, "");
+    int value = instr->source.value;
     SET_BITS(data, 16, 31, value);
     
     return true;
