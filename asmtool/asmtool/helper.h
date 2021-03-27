@@ -25,9 +25,16 @@ void dump_to_hex(unsigned char* data, int len);
 
 int count_bits(int value);
 
+#define _error(file, line, err, ...) \
+    { \
+        char __errorbuffer[1000]; \
+        sprintf(__errorbuffer, err, ##__VA_ARGS__); \
+        printf("%s:%d: %s\n", file, line, __errorbuffer); \
+        return false; \
+    }
+
 #define error(err, ...) \
-    printf(err, ##__VA_ARGS__); \
-    return false;
+    _error(__FILE__, __LINE__, err, ##__VA_ARGS__)
 
 #define check(value) \
     if (!(value)) \

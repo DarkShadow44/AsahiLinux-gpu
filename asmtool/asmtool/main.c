@@ -1,23 +1,7 @@
 #include "gpu.h"
 
-int main(int argc, const char* argv[]) {
-    
-    hardware_init();
-    
-    /*const char* params] = {
-        "",
-        "dump_metallib",
-        "/Users/fabian/Programming/AsahiLinux-gpu/asmtool/testing/test.metal"
-    };*/
-    
-    const char* params[] = {
-        "",
-        "disasm",
-        "/Users/fabian/Programming/GPU/applegpu/out.dat"
-    };
-    argc = 3;
-    argv = params;
-    
+static bool handle_command(int argc, const char* argv[])
+{
     if (argc > 1)
     {
         const char* command = argv[1];
@@ -53,32 +37,59 @@ int main(int argc, const char* argv[]) {
                 const char* path = argv[2];
                 
                 binary_data data_bytecode = {0};
-                if (!read_file(path, &data_bytecode, false))
-                {
-                    return 1;
-                }
+                check(read_file(path, &data_bytecode, false));
                 
                 instruction* instructions;
-                if (!disassemble_bytecode_to_structs(data_bytecode, &instructions))
-                {
-                    return 1;
-                }
+                check(disassemble_bytecode_to_structs(data_bytecode, &instructions));
                 
                 binary_data data_disassembly = {0};
-                if (!disassemble_structs_to_text(instructions, &data_disassembly))
-                {
-                    return 1;
-                }
+                check(disassemble_structs_to_text(instructions, &data_disassembly, true));
                 printf("%s\n", data_disassembly.data);
                 
                 instruction* instructions_asm;
-                if(!assemble_text_to_structs(data_disassembly, &instructions_asm))
-                {
-                    return 1;
-                }
+                check(assemble_text_to_structs(data_disassembly, &instructions_asm));
             }
         }
-        return 0;
+        if (!strcmp(command, "test"))
+        {
+            check(run_tests());
+        }
+    }
+    return true;
+}
+
+int main(int argc, const char* argv[]) {
+    
+    hardware_init();
+    
+    const char* params_dump[] = {
+        "",
+        "dump_metallib",
+        "/Users/fabian/Programming/AsahiLinux-gpu/asmtool/testing/test.metal"
+    };
+    
+    const char* params_disasm[] = {
+        "",
+        "disasm",
+        "/Users/fabian/Programming/GPU/applegpu/out.dat"
+    };
+    
+    const char* params_test[] = {
+        "",
+        "test",
+        ""
+    };
+    
+    (void)params_disasm;
+    (void)params_dump;
+    (void)params_test;
+    
+    argc = 3;
+    argv = params_test;
+    
+    if (!handle_command(argc, argv))
+    {
+        return 1;
     }
     return 0;
 }

@@ -10,6 +10,7 @@
 		1F7D38E0260C78B800A48D1C /* tests.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38DF260C78B800A48D1C /* tests.c */; };
 		1F7D38E5260D1E5000A48D1C /* assembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E4260D1E5000A48D1C /* assembler_text.c */; };
 		1F7D38E9260D1E5B00A48D1C /* disassembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */; };
+		1F88B51E260F8D7D00217A68 /* emulator.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F88B51D260F8D7D00217A68 /* emulator.c */; };
 		1FF2932126069F1500DFF4B3 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932026069F1500DFF4B3 /* main.c */; };
 		1FF2932426069F1F00DFF4B3 /* test.metal in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932326069F1F00DFF4B3 /* test.metal */; };
 		1FF2932926069F3900DFF4B3 /* assembler_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932826069F3900DFF4B3 /* assembler_binary.c */; };
@@ -36,6 +37,7 @@
 		1F7D38DF260C78B800A48D1C /* tests.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = tests.c; sourceTree = "<group>"; };
 		1F7D38E4260D1E5000A48D1C /* assembler_text.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = assembler_text.c; sourceTree = "<group>"; };
 		1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disassembler_text.c; sourceTree = "<group>"; };
+		1F88B51D260F8D7D00217A68 /* emulator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = emulator.c; sourceTree = "<group>"; };
 		1F8E0AFE260C69B300CED54D /* gpu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gpu.h; sourceTree = "<group>"; };
 		1FF292F626069DC400DFF4B3 /* asmtool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asmtool; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FF2932026069F1500DFF4B3 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				1FF2932626069F2A00DFF4B3 /* instructions.h */,
 				1FF2933426069F6100DFF4B3 /* hardware.m */,
 				1FF2932326069F1F00DFF4B3 /* test.metal */,
+				1F88B51D260F8D7D00217A68 /* emulator.c */,
 			);
 			path = asmtool;
 			sourceTree = "<group>";
@@ -166,6 +169,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FF2932126069F1500DFF4B3 /* main.c in Sources */,
+				1F88B51E260F8D7D00217A68 /* emulator.c in Sources */,
 				1FF2933226069F5000DFF4B3 /* disassembler_binary.c in Sources */,
 				1FF2932E26069F4800DFF4B3 /* helper.c in Sources */,
 				1F7D38E5260D1E5000A48D1C /* assembler_text.c in Sources */,

@@ -390,8 +390,8 @@ bool get_results_from_gpu(binary_data code, test_output* output)
                 printf("[");
                 assert(r/4 < TEST_BUFFER_COUNT);
                 for (int simd = 0; simd < count; simd++) {
-                    //uint32_t *outputs = (uint32_t*)outputBuffers[r/4].contents;
-                    //printf("0x%x,", outputs[(r & 3) + (simd * 4)]);
+                    uint32_t *outputs = (uint32_t*)outputBuffers[r/4].contents;
+                    printf("0x%x,", outputs[(r & 3) + (simd * 4)]);
                 }
                 printf("],\n");
             }

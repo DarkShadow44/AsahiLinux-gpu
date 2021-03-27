@@ -6,13 +6,13 @@
 /* tests */
 
 #define TEST_BUFFER_COUNT 1
-#define TEST_BUFFER_SIZE 100
+#define TEST_BUFFER_SIZE 16
 
-void run_tests(void);
+bool run_tests(void);
 
 typedef struct _test_output
 {
-    uint32_t buffer0[100][4];
+    uint32_t buffer0[TEST_BUFFER_SIZE][4];
 } test_output;
 
 
@@ -99,6 +99,8 @@ typedef union _instruction_data
 } instruction_data;
 
 typedef struct _instruction {
+    unsigned char original_bytes[20];
+    int original_len;
     struct _instruction* next;
     instruction_type type;
     instruction_data data;
@@ -125,7 +127,7 @@ static inline void destroy_instruction_list(instruction* list)
 /* disassembler */
 
 bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instructions);
-bool disassemble_structs_to_text(instruction* instructions, binary_data* text);
+bool disassemble_structs_to_text(instruction* instructions, binary_data* text, bool print_offsets);
 
 
 /* assembler */

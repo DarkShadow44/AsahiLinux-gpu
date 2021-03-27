@@ -100,7 +100,7 @@ bool assemble_structs_to_bytecode(instruction* instructions, binary_data* byteco
                 break;
 
             default:
-                error("Unhandled instruction %d\n", instructions->type);
+                error("Unhandled instruction %d", instructions->type);
         }
 
         memcpy(bytecode->data + len, buffer, size);

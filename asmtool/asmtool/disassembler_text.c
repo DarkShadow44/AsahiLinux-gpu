@@ -39,6 +39,17 @@ static bool make_memory_reg(char* buffer, operation_src memory_reg, int mask)
     return true;
 }
 
+static void bytes_to_hex(char* buffer, unsigned char* data, int len)
+{
+    buffer[0] = 0;
+    for (int i = 0; i < len; i++)
+    {
+        char temp[20];
+        sprintf(temp, "%02X", data[i]);
+        strcat(buffer, temp);
+    }
+}
+
 
 static bool disassemble_data_store(instruction* instruction, char* buffer)
 {
@@ -69,11 +80,13 @@ static void disassemble_mov(instruction* instruction, char* buffer)
     sprintf(buffer, "mov r%d, %d", instruction->data.mov.reg, instruction->data.mov.value);
 }
 
-bool disassemble_structs_to_text(instruction* instructions, binary_data* text)
+bool disassemble_structs_to_text(instruction* instructions, binary_data* text, bool print_offsets)
 {
     validate(text->data == 0, "");
     text->len = 1000;
     text->data = calloc(1000, 1);
+    
+    int bytecode_pos = 0;
     
     int len = 0;
     char buffer[200];
@@ -95,12 +108,24 @@ bool disassemble_structs_to_text(instruction* instructions, binary_data* text)
                 break;
                 
             default:
-                error("Unhandled instruction %d\n", instructions->type);
+                error("Unhandled instruction %d", instructions->type);
         }
         
-        strcat((char*)text->data, buffer);
-        strcat((char*)text->data, ";\n");
-        len += strlen(buffer) + 2;
+        char line[200];
+        if (print_offsets)
+        {
+            char buffer_bytes[50];
+            bytes_to_hex(buffer_bytes, instructions->original_bytes, instructions->original_len);
+            sprintf(line, "%4X: %-24s %s;\n", bytecode_pos, buffer_bytes, buffer);
+            bytecode_pos += instructions->original_len;
+        }
+        else
+        {
+            sprintf(line, "%s;\n", buffer);
+        }
+        
+        strcat((char*)text->data, line);
+        len += strlen(line);
         
         instructions = instructions->next;
         if (len + 200 > text->len)

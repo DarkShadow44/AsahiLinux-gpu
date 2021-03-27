@@ -204,8 +204,10 @@ bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instruc
                 check(disassemble_mov(data_instruction, instruction, &size));
                 break;
             default:
-                error("Unknown opcode %d\n", opcode);
+                error("Unknown opcode %d", opcode);
         }
+        instruction->original_len = size;
+        memcpy(instruction->original_bytes, data_instruction.data, size);
         pos += size;
     }
     
