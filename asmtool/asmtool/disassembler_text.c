@@ -50,11 +50,16 @@ static void bytes_to_hex(char* buffer, unsigned char* data, int len)
     for (int i = 0; i < len; i++)
     {
         char temp[20];
-        sprintf(temp, "%02X", data[i]);
+        sprintf(temp, "%02X ", data[i]);
         strcat(buffer, temp);
     }
 }
 
+/*
+ --------------------------------------------
+ Actual disassembling start
+ --------------------------------------------
+ */
 
 static bool disassemble_data_store(instruction* instruction, char* buffer)
 {
@@ -143,7 +148,7 @@ bool disassemble_structs_to_text(instruction* instructions, binary_data* text, b
         {
             char buffer_bytes[50];
             bytes_to_hex(buffer_bytes, instructions->original_bytes, instructions->original_len);
-            sprintf(line, "%4X: %-24s %s;\n", bytecode_pos, buffer_bytes, buffer);
+            sprintf(line, "%4X: %-30s %s;\n", bytecode_pos, buffer_bytes, buffer);
             bytecode_pos += instructions->original_len;
         }
         else

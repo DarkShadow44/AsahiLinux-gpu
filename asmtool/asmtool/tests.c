@@ -1,5 +1,18 @@
 #include "gpu.h"
 
+static void dump_disassembly(binary_data data_bytecode)
+{
+    instruction* instructions;
+    disassemble_bytecode_to_structs(data_bytecode, &instructions);
+    
+    binary_data data_disassembly = {0};
+    disassemble_structs_to_text(instructions, &data_disassembly, true);
+    printf("%s\n", data_disassembly.data);
+    
+    destroy_instruction_list(instructions);
+    free(data_disassembly.data);
+}
+
 static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, int output_expected_len, const char* file, int line)
 {
     binary_data bytecode;
@@ -17,8 +30,7 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
     check(disassemble_bytecode_to_structs(data_bytecode, &instructions));
     
     binary_data data_disassembly = {0};
-    check(disassemble_structs_to_text(instructions, &data_disassembly, true));
-    printf("%s\n", data_disassembly.data);
+    check(disassemble_structs_to_text(instructions, &data_disassembly, false));
     
     check(get_results_from_gpu(bytecode, &output_gpu));
     
@@ -29,7 +41,7 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
             int pos = i + j * 16;
             if (output_expected[pos] != output_gpu.buffer0[i][j])
             {
-                _error(file, line, "At %d: Expected %X, got %X\n", pos, output_expected[pos], output_gpu.buffer0[i][j]);
+                error_(file, line, "GPU test at %d: Expected %X, got %X\n", pos, output_expected[pos], output_gpu.buffer0[i][j]);
             }
         }
     }
@@ -44,19 +56,38 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
             int pos = i + j * 16;
             if (output_expected[pos] != emu_state.data.buffer0[i][j])
             {
-                _error(file, line, "At %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.buffer0[i][j]);
+                error_(file, line, "Emu test at %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.buffer0[i][j]);
             }
         }
     }
-     
-/*
-    binary_data data_disassembly = {0};
-    check(disassemble_structs_to_text(instructions, &data_disassembly, true));
-    printf("%s\n", data_disassembly.data);
 
-    //instruction* instructions_asm;
-    //check(assemble_text_to_structs(data_disassembly, &instructions_asm));
-*/
+    instruction* instructions_asm;
+    check(assemble_text_to_structs(data_disassembly, &instructions_asm));
+    
+    binary_data data_assembly = {0};
+    check(assemble_structs_to_bytecode(instructions_asm, &data_assembly));
+
+#define DUMP false
+    if (DUMP)
+    {
+        dump_disassembly(data_bytecode);
+        dump_disassembly(data_assembly);
+    }
+#undef DUMP
+    
+    validate_(file, line, data_assembly.len == data_bytecode.len, "Expected len of %d, got %d", data_bytecode.len, data_assembly.len);
+    for (int i = 0; i < data_bytecode.len; i++)
+    {
+        if (data_bytecode.data[i] != data_assembly.data[i])
+        {
+            error_(file, line, "Asm test at %X: Expected %X, got %X\n", i, data_bytecode.data[i], data_assembly.data[i]);
+        }
+    }
+    
+    destroy_instruction_list(instructions);
+    destroy_instruction_list(instructions_asm);
+    free(data_disassembly.data);
+    free(data_assembly.data);
     
     return true;
 }

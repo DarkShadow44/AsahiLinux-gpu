@@ -107,6 +107,12 @@ operation_src make_aludst(int value, int flag)
     return ret;
 }
 
+/*
+ --------------------------------------------
+ Actual disassembling start
+ --------------------------------------------
+ */
+
 static bool disassemble_data_store(binary_data data, instruction* instruction, int* size)
 {
     *size = 8;
@@ -133,6 +139,9 @@ static bool disassemble_data_store(binary_data data, instruction* instruction, i
     int u5 = GET_BITS(data, 50, 51);
     int mask = GET_BITS(data, 52, 55);
     int offset3 = GET_BITS(data, 56, 63);
+    
+    assert(u1 == 1);
+    assert(u4 == 4);
  
     int offset = offset1 + (offset2 << 4) + (offset3 << 8);
     int reg = reg1 + (reg2 << 6);
@@ -144,11 +153,12 @@ static bool disassemble_data_store(binary_data data, instruction* instruction, i
     offset = offset << shift;
     
     instruction->type = INSTRUCTION_STORE;
-    instruction->data.load_store.memory_offset = make_memory_offset(offset, flag_offset_immediate, flag_offset_signextend);
-    instruction->data.load_store.memory_base = make_memory_base(base, flag_base);
-    instruction->data.load_store.memory_reg = make_memory_reg(reg, flag_reg);
-    instruction->data.load_store.format = format;
-    instruction->data.load_store.mask = mask;
+    instruction_data_load_store* instr = &instruction->data.load_store;
+    instr->memory_offset = make_memory_offset(offset, flag_offset_immediate, flag_offset_signextend);
+    instr->memory_base = make_memory_base(base, flag_base);
+    instr->memory_reg = make_memory_reg(reg, flag_reg);
+    instr->format = format;
+    instr->mask = mask;
     return true;
 }
 
@@ -159,7 +169,8 @@ static bool disassemble_ret(binary_data data, instruction* instruction, int* siz
     int reg = GET_BITS(data, 9, 15);
     
     instruction->type = INSTRUCTION_RET;
-    instruction->data.ret.reg = reg;
+    instruction_ret* instr = &instruction->data.ret;
+    instr->reg = reg;
     return true;
 }
 
@@ -174,9 +185,10 @@ static bool disassemble_mov(binary_data data, instruction* instruction, int* siz
     int value = GET_BITS(data, 16, 31);
     
     instruction->type = INSTRUCTION_MOV;
-    instruction->data.mov.dest = make_aludst(reg, flag);
-    instruction->data.mov.source.type = OPERATION_SOURCE_IMMEDIATE;
-    instruction->data.mov.source.value = value;
+    instruction_mov* instr = &instruction->data.mov;
+    instr->dest = make_aludst(reg, flag);
+    instr->source.type = OPERATION_SOURCE_IMMEDIATE;
+    instr->source.value = value;
     return true;
 }
 
