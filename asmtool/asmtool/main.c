@@ -21,9 +21,11 @@ static bool handle_command(int argc, const char* argv[])
                 // dump_to_binary(data_bytecode.data + 6, 8);
                 // dump_to_hex(data_bytecode.data, data_bytecode.len);
                 // disassemble_bytecode_to_structs(data_bytecode);
-                test_output out;
-                get_results_from_gpu(data_bytecode, &out);
-                get_results_from_gpu(data_bytecode, 0);
+                // test_output out;
+                // get_results_from_gpu(data_bytecode, &out);
+                // get_results_from_gpu(data_bytecode, 0);
+                
+                dump_disassembly(data_bytecode);
                 
                 free(data_metallib.data);
                 free(data_metal.data);

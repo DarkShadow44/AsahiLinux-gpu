@@ -90,8 +90,8 @@ static operation_src make_memory_reg(int value, int flag)
     }
     else
     {
-        ret.type = OPERATION_SOURCE_REG16;
-        ret.value_int = value;
+        ret.type = (value & 1) ? OPERATION_SOURCE_REG16H : OPERATION_SOURCE_REG16L;
+        ret.value_int = value >> 1;
     }
     
     return ret;
@@ -107,8 +107,8 @@ static operation_src make_aludst(int value, int flag)
    }
    else
    {
-       ret.type = OPERATION_SOURCE_REG16;
-       ret.value_int = value;
+       ret.type = (value & 1) ? OPERATION_SOURCE_REG16H : OPERATION_SOURCE_REG16L;
+       ret.value_int = value >> 1;
    }
     return ret;
 }
@@ -182,16 +182,25 @@ static bool disassemble_ret(binary_data data, instruction* instruction, int* siz
 
 static bool disassemble_mov(binary_data data, instruction* instruction, int* size)
 {
-    *size = 6;
-    data = get_instruction_data(data, *size); // TODO: L flag
     int flag = GET_BITS(data, 7, 8);
+    int flag_long = GET_BITS(data, 15, 15);
+    assert(flag_long == 0);
+    
+    int flag32 = flag & 2;
+    *size = flag32 ? 6 : 4;
+    data = get_instruction_data(data, *size);
     int reg1 = GET_BITS(data, 9, 14);
     int reg2 = GET_BITS(data, 44, 45);
     int reg = reg1 + (reg2 << 6);
-    int value = GET_BITS(data, 16, 31);
-    
-    int flag_long = GET_BITS(data, 15, 15);
-    assert(flag_long == 0);
+    int value;
+    if (flag32)
+    {
+        value = GET_BITS(data, 16, 47);
+    }
+    else
+    {
+        value = GET_BITS(data, 16, 31);
+    }
     
     instruction->type = INSTRUCTION_MOV;
     instruction_mov* instr = &instruction->data.mov;
@@ -238,7 +247,9 @@ static bool call_func(binary_data data, instruction* instruction, int* size)
             return true;
         }
     }
-    error("Unknown opcode 0x%0X", opcode);
+    printf("Last instruction: \n");
+    dump_to_hex(data.data, data.len < 10 ? data.len : 10);
+    error("Unknown opcode 0x%0X\n", opcode);
     return false;
 }
 

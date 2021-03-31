@@ -8,8 +8,11 @@ typedef struct _function {
 
 static void SET_BITS(binary_data data, int start, int end, uint64_t value_new)
 {
-    assert(start / 8 < data.len && end / 8 < data.len);
-    int64_t mask = ~((-1) << (end-start + 1));
+    if (start / 8 >= data.len || end / 8 >= data.len)
+    {
+        return;
+    }
+    int64_t mask = ~(((uint64_t)-1) << (end-start + 1));
     value_new &= mask;
 
     int start_full = start / 8;
@@ -68,7 +71,7 @@ static bool make_memory_base(operation_src src, int* value, int* flag)
 
 static bool make_memory_reg(operation_src src, int* value, int* flag)
 {
-    if (src.type != OPERATION_SOURCE_REG32 && src.type != OPERATION_SOURCE_REG16)
+    if (src.type != OPERATION_SOURCE_REG32 && src.type != OPERATION_SOURCE_REG16L && src.type != OPERATION_SOURCE_REG16H)
     {
         error("Invalid type");
     }
@@ -94,9 +97,15 @@ static bool make_aludst(operation_src src, uint32_t* value, int* flags)
             *flags |= 2;
             *value = src.value_int << 1;
             break;
+        case OPERATION_SOURCE_REG16L:
+            *value = src.value_int << 1;
+            break;
+        case OPERATION_SOURCE_REG16H:
+            *value = (src.value_int << 1) | 1;
+            break;
             
         default:
-            error("Unhandled");
+            error("Unhandled operation src %d", src.type);
     }
     return true;
 }
@@ -116,10 +125,10 @@ static binary_data make_instruction_data(binary_data data, int bytes)
 
 static bool assemble_data_store(instruction* instruction, binary_data data, int* size)
 {
+    instruction_data_load_store *instr = &instruction->data.load_store;
+    
     *size = 8;
     data = make_instruction_data(data, *size);
-    
-    instruction_data_load_store *instr = &instruction->data.load_store;
     
     int offset;
     int reg;
@@ -190,10 +199,11 @@ static bool assemble_ret(instruction* instruction, binary_data data, int* size)
 
 static bool assemble_mov(instruction* instruction, binary_data data, int* size)
 {
-    *size = 6;
-    data = make_instruction_data(data, *size);
-    
     instruction_mov *instr = &instruction->data.mov;
+    
+    bool flag32 = instr->dest.type == OPERATION_SOURCE_REG32;
+    *size = flag32 ? 6 : 4;
+    data = make_instruction_data(data, *size);
     
     SET_BITS(data, 0, 6, OPCODE_MOV);
     
@@ -201,15 +211,24 @@ static bool assemble_mov(instruction* instruction, binary_data data, int* size)
     int flag;
     check(make_aludst(instr->dest, &reg, &flag));
     
-    SET_BITS(data,7, 8, flag);
+    SET_BITS(data, 7, 8, flag);
     
     SET_BITS(data, 9, 14, reg);
     reg >>= 6;
-    SET_BITS(data, 44, 45, reg);
     
     validate(instr->source.type == OPERATION_SOURCE_IMMEDIATE, "");
     int value = instr->source.value_int;
-    SET_BITS(data, 16, 31, value);
+    
+    if (flag32)
+    {
+        SET_BITS(data, 16, 47, value);
+        SET_BITS(data, 60, 61, reg);
+    }
+    else
+    {
+        SET_BITS(data, 16, 31, value);
+        SET_BITS(data, 44, 45, reg);
+    }
     
     return true;
 }

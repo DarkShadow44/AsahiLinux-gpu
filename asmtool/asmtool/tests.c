@@ -54,7 +54,7 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
     binary_data data_assembly = {0};
     check(assemble_structs_to_bytecode(instructions_asm, &data_assembly));
 
-#define DUMP false
+#define DUMP 0
     if (DUMP)
     {
         dump_disassembly(data_bytecode);
@@ -104,9 +104,55 @@ static bool test_basic(void)
     
     return true;
 }
+
+static bool test_mov(void)
+{
+    uint32_t test1_output[] =
+    {
+        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 100000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
+    uint32_t test2_output[] =
+    {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0x10002, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
+    unsigned char test1[] = {
+        0x62, 0x19, 0x01, 0x00, 0x00, 0x00,             // mov r6, 1;
+        0x62, 0x1D, 0x02, 0x00, 0x00, 0x00,             // mov r7, 2;
+        0x62, 0x21, 0xA0, 0x86, 0x01, 0x00,             // mov r8, 100000;
+        0x62, 0x25, 0x04, 0x00, 0x00, 0x00,             // mov r9, 4;
+        0x45, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_store i32, 0xF, r6_r7_r8_r9, u0_u1, 4, signed;
+        0x88, 0x00                                      // stop
+    };
+    
+    unsigned char test2[] = {
+        0x62, 0x19, 0x00, 0x00, 0x00, 0x00,             // mov r6, 0;
+        0x62, 0x1D, 0x00, 0x00, 0x00, 0x00,             // mov r7, 0;
+        0x62, 0x21, 0x00, 0x00, 0x00, 0x00,             // mov r8, 0;
+        0x62, 0x26, 0x01, 0x00,                         // mov r9h, 1;
+        0x62, 0x24, 0x02, 0x00,                         // mov r9l, 2;
+        0x45, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_store i32, 0xF, r6_r7_r8_r9, u0_u1, 4, signed;
+        0x88, 0x00                                      // stop
+    };
+    
+    
+    check(run_test(test1, test1_output)); /* Test Mov with 32bit register */
+    check(run_test(test2, test2_output)); /* Test mov with 16bit register */
+    
+    return true;
+}
+
 bool run_tests(void)
 {
     check(test_basic());
+    check(test_mov());
     printf("Tests finished!\n");
     return true;
 }

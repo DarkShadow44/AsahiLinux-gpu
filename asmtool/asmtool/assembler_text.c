@@ -39,6 +39,35 @@ static bool make_operation_src(char* text, operation_src* src)
             int value2 = atoi(&reg2[1]);
             validate(value2 == src->value_int  + 1, "Second part must be subsequent register!");
         }
+        else
+        {
+            char last_char = reg1[strlen(reg1) - 1];
+            if (last_char == 'l')
+            {
+                src->type = OPERATION_SOURCE_REG16L;
+            }
+            if (last_char == 'h')
+            {
+                src->type = OPERATION_SOURCE_REG16H;
+            }
+        }
+    }
+    else if (reg1[0] == 'u')
+    {
+        src->type = OPERATION_SOURCE_REG32;
+        src->value_int = atoi(&reg1[1]);
+        
+        if (reg2)
+        {
+            src->type = OPERATION_SOURCE_UNIFORM64;
+            validate(reg2[0] == 'u', "Second part must be uniform as well!");
+            int value2 = atoi(&reg2[1]);
+            validate(value2 == src->value_int  + 1, "Second part must be subsequent uniform!");
+        }
+        else
+        {
+            assert(0);
+        }
     }
     else
     {

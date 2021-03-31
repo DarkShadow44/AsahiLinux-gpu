@@ -10,11 +10,20 @@ static bool make_operation_src_(char* buffer, operation_src src, int offset)
 {
     switch (src.type)
     {
+        case OPERATION_SOURCE_REG16L:
+            sprintf(buffer, "r%dl", src.value_int + offset);
+            break;
+        case OPERATION_SOURCE_REG16H:
+            sprintf(buffer, "r%dh", src.value_int + offset);
+            break;
         case OPERATION_SOURCE_REG32:
             sprintf(buffer, "r%d", src.value_int + offset);
             break;
         case OPERATION_SOURCE_REG64:
             sprintf(buffer, "r%d_r%d", src.value_int, src.value_int + 1);
+            break;
+        case OPERATION_SOURCE_UNIFORM64:
+            sprintf(buffer, "u%d_u%d", src.value_int, src.value_int + 1);
             break;
         case OPERATION_SOURCE_IMMEDIATE:
             sprintf(buffer, "%d", src.value_int);
