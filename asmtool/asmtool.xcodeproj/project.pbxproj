@@ -44,7 +44,6 @@
 		1FF2932326069F1F00DFF4B3 /* test.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = test.metal; sourceTree = "<group>"; };
 		1FF2932626069F2A00DFF4B3 /* instructions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = instructions.h; sourceTree = "<group>"; };
 		1FF2932826069F3900DFF4B3 /* assembler_binary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = assembler_binary.c; sourceTree = "<group>"; };
-		1FF2932C26069F4800DFF4B3 /* helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helper.h; sourceTree = "<group>"; };
 		1FF2932D26069F4800DFF4B3 /* helper.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = helper.c; sourceTree = "<group>"; };
 		1FF2933126069F5000DFF4B3 /* disassembler_binary.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disassembler_binary.c; sourceTree = "<group>"; };
 		1FF2933426069F6100DFF4B3 /* hardware.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = hardware.m; sourceTree = "<group>"; };
@@ -94,7 +93,6 @@
 				1FF293512606DC9F00DFF4B3 /* metallib.c */,
 				1F7D38DF260C78B800A48D1C /* tests.c */,
 				1F8E0AFE260C69B300CED54D /* gpu.h */,
-				1FF2932C26069F4800DFF4B3 /* helper.h */,
 				1FF2934E2606A65300DFF4B3 /* hook.h */,
 				1FF2932626069F2A00DFF4B3 /* instructions.h */,
 				1FF2933426069F6100DFF4B3 /* hardware.m */,

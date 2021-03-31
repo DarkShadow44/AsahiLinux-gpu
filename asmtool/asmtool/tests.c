@@ -1,18 +1,5 @@
 #include "gpu.h"
 
-static void dump_disassembly(binary_data data_bytecode)
-{
-    instruction* instructions;
-    disassemble_bytecode_to_structs(data_bytecode, &instructions);
-    
-    binary_data data_disassembly = {0};
-    disassemble_structs_to_text(instructions, &data_disassembly, true);
-    printf("%s\n", data_disassembly.data);
-    
-    destroy_instruction_list(instructions);
-    free(data_disassembly.data);
-}
-
 static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, int output_expected_len, const char* file, int line)
 {
     binary_data bytecode;

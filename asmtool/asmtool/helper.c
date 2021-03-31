@@ -1,4 +1,3 @@
-#include "helper.h"
 #include "gpu.h"
 
 #include <unistd.h>
@@ -153,4 +152,17 @@ bool assemble_text_to_bytecode(binary_data data_text, binary_data* data_bytecode
     destroy_instruction_list(instructions);
     
     return true;
+}
+
+void dump_disassembly(binary_data data_bytecode)
+{
+    instruction* instructions;
+    disassemble_bytecode_to_structs(data_bytecode, &instructions);
+    
+    binary_data data_disassembly = {0};
+    disassemble_structs_to_text(instructions, &data_disassembly, true);
+    printf("%s\n", data_disassembly.data);
+    
+    destroy_instruction_list(instructions);
+    free(data_disassembly.data);
 }

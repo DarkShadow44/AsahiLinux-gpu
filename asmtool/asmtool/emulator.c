@@ -6,10 +6,10 @@ static bool get_value_(emu_state *state, operation_src src, uint64_t* value, int
     switch (src.type)
     {
         case OPERATION_SOURCE_IMMEDIATE:
-            *value = src.value;
+            *value = src.value_int;
             break;
         case OPERATION_SOURCE_REG32:
-            *value = state->reg[src.value + offset];
+            *value = state->reg[src.value_int + offset];
             break;
         default:
             error("Unhandled src %d", src.type);
@@ -29,7 +29,7 @@ static bool put_value(emu_state *state, operation_src src, uint64_t value)
         case OPERATION_SOURCE_IMMEDIATE:
             error("Invalid operation");
         case OPERATION_SOURCE_REG32:
-            state->reg[src.value] = (uint32_t)value;
+            state->reg[src.value_int] = (uint32_t)value;
             break;
         default:
             error("Unhandled src %d", src.type);

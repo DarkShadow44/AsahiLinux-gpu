@@ -50,7 +50,7 @@ static operation_src make_memory_offset(int value, int flag_sign1, int flag_sign
     {
         ret.flags = OPERATION_FLAG_SIGN_EXTEND;
         ret.type = OPERATION_SOURCE_IMMEDIATE;
-        ret.value = value;
+        ret.value_int = value;
         return ret;
     }
     
@@ -62,7 +62,7 @@ static operation_src make_memory_offset(int value, int flag_sign1, int flag_sign
         ret.flags = OPERATION_FLAG_SIGN_EXTEND;
     }
     ret.type = OPERATION_SOURCE_REG32;
-    ret.value = value >> 1;
+    ret.value_int = value >> 1;
     
     return ret;
 }
@@ -73,7 +73,7 @@ static operation_src make_memory_base(int value, int flag)
 
     operation_src ret = {0};
     ret.type = flag ? OPERATION_SOURCE_UNIFORM64 : OPERATION_SOURCE_REG64;
-    ret.value = value >> 1;
+    ret.value_int = value >> 1;
     
     return ret;
 }
@@ -86,12 +86,12 @@ static operation_src make_memory_reg(int value, int flag)
     if (flag)
     {
         ret.type = OPERATION_SOURCE_REG32;
-        ret.value = value >> 1;
+        ret.value_int = value >> 1;
     }
     else
     {
         ret.type = OPERATION_SOURCE_REG16;
-        ret.value = value;
+        ret.value_int = value;
     }
     
     return ret;
@@ -103,12 +103,12 @@ static operation_src make_aludst(int value, int flag)
    if (flag & 2)
    {
        ret.type = OPERATION_SOURCE_REG32;
-       ret.value = value >> 1;
+       ret.value_int = value >> 1;
    }
    else
    {
        ret.type = OPERATION_SOURCE_REG16;
-       ret.value = value;
+       ret.value_int = value;
    }
     return ret;
 }
@@ -190,11 +190,14 @@ static bool disassemble_mov(binary_data data, instruction* instruction, int* siz
     int reg = reg1 + (reg2 << 6);
     int value = GET_BITS(data, 16, 31);
     
+    int flag_long = GET_BITS(data, 15, 15);
+    assert(flag_long == 0);
+    
     instruction->type = INSTRUCTION_MOV;
     instruction_mov* instr = &instruction->data.mov;
     instr->dest = make_aludst(reg, flag);
     instr->source.type = OPERATION_SOURCE_IMMEDIATE;
-    instr->source.value = value;
+    instr->source.value_int = value;
     return true;
 }
 

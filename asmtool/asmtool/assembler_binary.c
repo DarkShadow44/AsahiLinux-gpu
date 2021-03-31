@@ -39,16 +39,16 @@ static bool make_memory_offset(operation_src src, int* value, int* flag_sign1, i
     if (*flag_sign1)
     {
         validate(src.flags & OPERATION_FLAG_SIGN_EXTEND, "Must be sign extended");
-        *value = src.value;
+        *value = src.value_int;
         return true;
     }
     
-    validate(src.value < 0x100, "");
+    validate(src.value_int < 0x100, "");
     validate(src.type == OPERATION_SOURCE_REG32, "Invalid type");
     
     *flag_sign2 = !(src.flags & OPERATION_FLAG_SIGN_EXTEND);
 
-    *value = src.value << 1;
+    *value = src.value_int << 1;
     
     return true;
 }
@@ -61,7 +61,7 @@ static bool make_memory_base(operation_src src, int* value, int* flag)
     }
     
     *flag = src.type == OPERATION_SOURCE_UNIFORM64;
-    *value = src.value << 1;
+    *value = src.value_int << 1;
     
     return true;
 }
@@ -76,11 +76,11 @@ static bool make_memory_reg(operation_src src, int* value, int* flag)
     *flag = src.type == OPERATION_SOURCE_REG32;
     if (*flag)
     {
-        *value = src.value << 1;
+        *value = src.value_int << 1;
     }
     else
     {
-        *value = src.value;
+        *value = src.value_int;
     }
     
     return true;
@@ -92,7 +92,7 @@ static bool make_aludst(operation_src src, uint32_t* value, int* flags)
     switch (src.type) {
         case OPERATION_SOURCE_REG32:
             *flags |= 2;
-            *value = src.value << 1;
+            *value = src.value_int << 1;
             break;
             
         default:
@@ -208,7 +208,7 @@ static bool assemble_mov(instruction* instruction, binary_data data, int* size)
     SET_BITS(data, 44, 45, reg);
     
     validate(instr->source.type == OPERATION_SOURCE_IMMEDIATE, "");
-    int value = instr->source.value;
+    int value = instr->source.value_int;
     SET_BITS(data, 16, 31, value);
     
     return true;

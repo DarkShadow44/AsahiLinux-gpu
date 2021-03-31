@@ -1,8 +1,6 @@
 #ifndef instructions_h
 #define instructions_h
 
-#include "helper.h"
-
 enum opcodes
 {
     OPCODE_STOP = 0x88,
