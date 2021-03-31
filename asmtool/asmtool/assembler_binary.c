@@ -6,35 +6,6 @@ typedef struct _function {
     bool (*func)(instruction* instruction, binary_data data, int* size);
 } function;
 
-static void SET_BITS(binary_data data, int start, int end, uint64_t value_new)
-{
-    if (start / 8 >= data.len || end / 8 >= data.len)
-    {
-        return;
-    }
-    int64_t mask = ~(((uint64_t)-1) << (end-start + 1));
-    value_new &= mask;
-
-    int start_full = start / 8;
-    int start_part = start % 8;
-    
-    unsigned char* bytes = data.data + start_full;
-    
-    // Extract up to 7 bytes of data
-    int64_t value = 0;
-    for (int i = 0; i < 7 && i < data.len; i++)
-    {
-        value += (int64_t)bytes[i] << (i*8);
-    }
-    
-    value |= value_new << start_part;
-    
-    for (int i = 0; i < 7 && i < data.len; i++)
-    {
-        bytes[i] = (value >> (i*8)) & 0xFF;
-    }
-}
-
 static bool make_memory_offset(operation_src src, int* value, int* flag_sign1, int* flag_sign2)
 {
     *flag_sign1 = src.type == OPERATION_SOURCE_IMMEDIATE;
@@ -201,10 +172,6 @@ static bool assemble_mov(instruction* instruction, binary_data data, int* size)
 {
     instruction_mov *instr = &instruction->data.mov;
     
-    bool flag32 = instr->dest.type == OPERATION_SOURCE_REG32;
-    *size = flag32 ? 6 : 4;
-    data = make_instruction_data(data, *size);
-    
     SET_BITS(data, 0, 6, OPCODE_MOV);
     
     uint32_t reg;
@@ -219,16 +186,23 @@ static bool assemble_mov(instruction* instruction, binary_data data, int* size)
     validate(instr->source.type == OPERATION_SOURCE_IMMEDIATE, "");
     int value = instr->source.value_int;
     
-    if (flag32)
+    int long_check;
+    if (instr->dest.type == OPERATION_SOURCE_REG32)
     {
         SET_BITS(data, 16, 47, value);
         SET_BITS(data, 60, 61, reg);
+        long_check = GET_BITS(data, 48, 63);
+        *size = 6 + (long_check ? 2 : 0);
     }
     else
     {
         SET_BITS(data, 16, 31, value);
         SET_BITS(data, 44, 45, reg);
+        long_check = GET_BITS(data, 32, 47);
+        *size = 4 + (long_check ? 2 : 0);
     }
+    
+    SET_BITS(data, 15, 15, long_check != 0);
     
     return true;
 }

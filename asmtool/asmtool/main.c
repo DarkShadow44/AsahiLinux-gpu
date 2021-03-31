@@ -126,8 +126,11 @@ int main(int argc, const char* argv[]) {
     (void)params_test;
     (void)params_asm;
     
-    //argc = 3;
-    //argv = params_asm;
+    if (argc == 1)
+    {
+        argc = 3;
+        argv = params_test;
+    }
     
     if (!handle_command(argc, argv))
     {

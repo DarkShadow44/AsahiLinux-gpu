@@ -68,6 +68,10 @@ typedef struct _test_output
     uint32_t buffer0[TEST_BUFFER_SIZE][4];
 } test_output;
 
+int64_t GET_BITS64(binary_data data, int start, int end);
+int GET_BITS(binary_data data, int start, int end);
+void SET_BITS(binary_data data, int start, int end, uint64_t value_new);
+
 
 /* hardware */
 

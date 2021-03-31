@@ -3,6 +3,64 @@
 #include <unistd.h>
 #include <sys/fcntl.h>
 
+int64_t GET_BITS64(binary_data data, int start, int end)
+{
+    if (end / 8 >= data.len)
+    {
+        assert(start / 8 >= data.len);
+        return 0;
+    }
+    int start_full = start / 8;
+    int start_part = start % 8;
+    
+    unsigned char* bytes = data.data + start_full;
+    
+    // Extract up to 7 bytes of data
+    int64_t value = 0;
+    for (int i = 0; i < 7 && i < data.len; i++)
+    {
+        value += (int64_t)bytes[i] << (i*8);
+    }
+    
+    int64_t mask = ~(((int64_t)-1) << (end-start + 1));
+    
+    return (value >> start_part) & mask;
+}
+
+int GET_BITS(binary_data data, int start, int end)
+{
+    return (int)GET_BITS64(data, start, end);
+}
+
+void SET_BITS(binary_data data, int start, int end, uint64_t value_new)
+{
+    if (start / 8 >= data.len || end / 8 >= data.len)
+    {
+        return;
+    }
+    int64_t mask = ~(((uint64_t)-1) << (end-start + 1));
+    value_new &= mask;
+
+    int start_full = start / 8;
+    int start_part = start % 8;
+    
+    unsigned char* bytes = data.data + start_full;
+    
+    // Extract up to 7 bytes of data
+    int64_t value = 0;
+    for (int i = 0; i < 7 && i < data.len; i++)
+    {
+        value += (int64_t)bytes[i] << (i*8);
+    }
+    
+    value |= value_new << start_part;
+    
+    for (int i = 0; i < 7 && i < data.len; i++)
+    {
+        bytes[i] = (value >> (i*8)) & 0xFF;
+    }
+}
+
 bool read_file(const char* path, binary_data* data, bool text)
 {
     int offset = text ? 1 : 0;

@@ -7,35 +7,6 @@ typedef struct _function {
     bool (*func)(binary_data data, instruction* instruction, int* size);
 } function;
 
-static int64_t GET_BITS64(binary_data data, int start, int end)
-{
-    if (end / 8 >= data.len)
-    {
-        assert(start / 8 >= data.len);
-        return 0;
-    }
-    int start_full = start / 8;
-    int start_part = start % 8;
-    
-    unsigned char* bytes = data.data + start_full;
-    
-    // Extract up to 7 bytes of data
-    int64_t value = 0;
-    for (int i = 0; i < 7 && i < data.len; i++)
-    {
-        value += (int64_t)bytes[i] << (i*8);
-    }
-    
-    int64_t mask = ~(((int64_t)-1) << (end-start + 1));
-    
-    return (value >> start_part) & mask;
-}
-
-static int GET_BITS(binary_data data, int start, int end)
-{
-    return (int)GET_BITS64(data, start, end);
-}
-
 static binary_data get_instruction_data(binary_data data, int bytes)
 {
     binary_data ret;
@@ -184,23 +155,28 @@ static bool disassemble_mov(binary_data data, instruction* instruction, int* siz
 {
     int flag = GET_BITS(data, 7, 8);
     int flag_long = GET_BITS(data, 15, 15);
-    assert(flag_long == 0);
     
     int flag32 = flag & 2;
     *size = flag32 ? 6 : 4;
+    if (flag_long)
+    {
+        *size += 2;
+    }
     data = get_instruction_data(data, *size);
     int reg1 = GET_BITS(data, 9, 14);
-    int reg2 = GET_BITS(data, 44, 45);
-    int reg = reg1 + (reg2 << 6);
     int value;
+    int reg2;
     if (flag32)
     {
         value = GET_BITS(data, 16, 47);
+        reg2 = GET_BITS(data, 60, 61);
     }
     else
     {
         value = GET_BITS(data, 16, 31);
+        reg2 = GET_BITS(data, 44, 45);
     }
+    int reg = reg1 + (reg2 << 6);
     
     instruction->type = INSTRUCTION_MOV;
     instruction_mov* instr = &instruction->data.mov;
