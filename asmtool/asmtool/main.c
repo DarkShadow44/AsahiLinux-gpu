@@ -1,5 +1,26 @@
 #include "gpu.h"
 
+static void concat_arguments(binary_data* data, int argc, const char* argv[], int start)
+{
+    assert(data->data == 0);
+    
+    int len = 0;
+    
+    for (int i = start; i < argc; i++)
+    {
+        len += strlen(argv[i]) + 1; // +1 for space
+    }
+    
+    data->data = calloc(len, 1);
+    data->len = len;
+    
+    for (int i = start; i < argc; i++)
+    {
+        strcat((char*)data->data, " ");
+        strcat((char*)data->data, argv[i]);
+    }
+}
+
 static bool handle_command(int argc, const char* argv[])
 {
     if (argc > 1)
@@ -31,6 +52,18 @@ static bool handle_command(int argc, const char* argv[])
                 free(data_metal.data);
                 free(data_bytecode.data);
             }
+        }
+        if (!strcmp(command, "asm"))
+        {
+            binary_data data_text = {0};
+            concat_arguments(&data_text, argc, argv, 2);
+            
+            binary_data data_bytecode = {0};
+            assemble_text_to_bytecode(data_text, &data_bytecode);
+            dump_disassembly(data_bytecode);
+            
+            free(data_text.data);
+            free(data_bytecode.data);
         }
         if (!strcmp(command, "disasm"))
         {
@@ -76,6 +109,12 @@ int main(int argc, const char* argv[]) {
         "/Users/fabian/Programming/GPU/applegpu/out.dat"
     };
     
+    const char* params_asm[] = {
+        "",
+        "asm",
+        "mov r9, 0"
+    };
+    
     const char* params_test[] = {
         "",
         "test",
@@ -85,9 +124,10 @@ int main(int argc, const char* argv[]) {
     (void)params_disasm;
     (void)params_dump;
     (void)params_test;
+    (void)params_asm;
     
-    argc = 3;
-    argv = params_test;
+    //argc = 3;
+    //argv = params_asm;
     
     if (!handle_command(argc, argv))
     {

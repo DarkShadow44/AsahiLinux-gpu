@@ -11,6 +11,7 @@
 		1F7D38E5260D1E5000A48D1C /* assembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E4260D1E5000A48D1C /* assembler_text.c */; };
 		1F7D38E9260D1E5B00A48D1C /* disassembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */; };
 		1F88B51E260F8D7D00217A68 /* emulator.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F88B51D260F8D7D00217A68 /* emulator.c */; };
+		1FA09EE026152D1C00EB63FB /* libhook.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 1FF293402606A32B00DFF4B3 /* libhook.dylib */; };
 		1FF2932126069F1500DFF4B3 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932026069F1500DFF4B3 /* main.c */; };
 		1FF2932426069F1F00DFF4B3 /* test.metal in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932326069F1F00DFF4B3 /* test.metal */; };
 		1FF2932926069F3900DFF4B3 /* assembler_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932826069F3900DFF4B3 /* assembler_binary.c */; };
@@ -22,6 +23,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		1FA09EE126152D1C00EB63FB /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				1FA09EE026152D1C00EB63FB /* libhook.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1FF292F426069DC400DFF4B3 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -120,6 +132,7 @@
 				1FF292F226069DC400DFF4B3 /* Sources */,
 				1FF292F326069DC400DFF4B3 /* Frameworks */,
 				1FF292F426069DC400DFF4B3 /* CopyFiles */,
+				1FA09EE126152D1C00EB63FB /* Embed Libraries */,
 			);
 			buildRules = (
 			);
