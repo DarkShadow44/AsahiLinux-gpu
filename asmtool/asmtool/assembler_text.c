@@ -1,6 +1,11 @@
 #include "gpu.h"
 #include "instructions.h"
 
+typedef struct _function {
+    const char* type;
+    bool (*func)(char buffer[10][20], instruction* instruction);
+} function;
+
 static int split_instruction(char* line, char buffer[10][20])
 {
     int pos = 0;
@@ -72,17 +77,6 @@ static bool make_memory_reg(char* buffer, operation_src* memory_reg, int mask)
  --------------------------------------------
  */
 
-static bool assemble_mov(char buffer[10][20], instruction* instruction)
-{
-    instruction->type = INSTRUCTION_MOV;
-    instruction_mov* instr = &instruction->data.mov;
-    
-    check(make_operation_src(buffer[1], &instr->dest));
-    check(make_operation_src(buffer[2], &instr->source));
-    
-    return true;
-}
-
 static bool assemble_data_store(char buffer[10][20], instruction* instruction)
 {
     instruction->type = INSTRUCTION_STORE;
@@ -105,6 +99,17 @@ static bool assemble_data_store(char buffer[10][20], instruction* instruction)
     return true;
 }
 
+static bool assemble_mov(char buffer[10][20], instruction* instruction)
+{
+    instruction->type = INSTRUCTION_MOV;
+    instruction_mov* instr = &instruction->data.mov;
+    
+    check(make_operation_src(buffer[1], &instr->dest));
+    check(make_operation_src(buffer[2], &instr->source));
+    
+    return true;
+}
+
 static bool assemble_stop(char buffer[10][20], instruction* instruction)
 {
     instruction->type = INSTRUCTION_STOP;
@@ -112,30 +117,28 @@ static bool assemble_stop(char buffer[10][20], instruction* instruction)
     return true;
 }
 
+static function functions[] =
+{
+    {"device_store", assemble_data_store},
+    {"mov", assemble_mov},
+    {"stop", assemble_stop},
+};
 
-static bool assemble_instruction(char* text, instruction* instruction)
+static bool call_func(char* text, instruction* instruction)
 {
     char buffer[10][20] = {0};
     split_instruction(text, buffer);
-    
-    if (!strcmp(buffer[0], "mov"))
+
+    for (int i = 0; i < ARRAY_SIZE(functions); i++)
     {
-        check(assemble_mov(buffer, instruction));
+        if (!strcmp(functions[i].type, buffer[0]))
+        {
+            check(functions[i].func(buffer, instruction));
+            return true;
+        }
     }
-    else if (!strcmp(buffer[0], "device_store"))
-    {
-        check(assemble_data_store(buffer, instruction));
-    }
-    else if (!strcmp(buffer[0], "stop"))
-    {
-        check(assemble_stop(buffer, instruction));
-    }
-    else
-    {
-        error("Unknown mnemonic '%s'\n", buffer[0]);
-    }
-    
-    return true;
+    error("Unknown mnemonic '%s'\n", buffer[0]);
+    return false;
 }
 
 bool assemble_text_to_structs(binary_data text, instruction** instructions)
@@ -163,7 +166,7 @@ bool assemble_text_to_structs(binary_data text, instruction** instructions)
             instruction_last = instruction;
         }
         
-        check(assemble_instruction(line, instruction));
+        check(call_func(line, instruction));
         
         line = strtok_r(0, ";\r\n", &state_lines);
     }

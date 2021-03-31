@@ -1,4 +1,5 @@
 #include "helper.h"
+#include "gpu.h"
 
 #include <unistd.h>
 #include <sys/fcntl.h>
@@ -130,4 +131,26 @@ int count_bits(int value)
         value >>= 1;
     }
     return ret;
+}
+
+bool disassemble_bytecode_to_text(binary_data data_bytecode, binary_data* data_text, bool print_offsets)
+{
+    instruction* instructions;
+    check(disassemble_bytecode_to_structs(data_bytecode, &instructions));
+    check(disassemble_structs_to_text(instructions, data_text, print_offsets));
+    
+    destroy_instruction_list(instructions);
+    
+    return true;
+}
+
+bool assemble_text_to_bytecode(binary_data data_text, binary_data* data_bytecode)
+{
+    instruction* instructions;
+    check(assemble_text_to_structs(data_text, &instructions));
+    check(assemble_structs_to_bytecode(instructions, data_bytecode));
+    
+    destroy_instruction_list(instructions);
+    
+    return true;
 }

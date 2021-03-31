@@ -1,7 +1,12 @@
 #include "gpu.h"
 #include "instructions.h"
 
-void SET_BITS(binary_data data, int start, int end, uint64_t value_new)
+typedef struct _function {
+    instruction_type type;
+    bool (*func)(instruction* instruction, binary_data data, int* size);
+} function;
+
+static void SET_BITS(binary_data data, int start, int end, uint64_t value_new)
 {
     assert(start / 8 < data.len && end / 8 < data.len);
     int64_t mask = ~((-1) << (end-start + 1));
@@ -109,7 +114,7 @@ static binary_data make_instruction_data(binary_data data, int bytes)
  --------------------------------------------
  */
 
-bool assemble_data_store(instruction* instruction, binary_data data, int* size)
+static bool assemble_data_store(instruction* instruction, binary_data data, int* size)
 {
     *size = 8;
     data = make_instruction_data(data, *size);
@@ -170,7 +175,7 @@ bool assemble_data_store(instruction* instruction, binary_data data, int* size)
     return true;
 }
 
-bool assemble_ret(instruction* instruction, binary_data data, int* size)
+static bool assemble_ret(instruction* instruction, binary_data data, int* size)
 {
     *size = 2;
     data = make_instruction_data(data, *size);
@@ -183,7 +188,7 @@ bool assemble_ret(instruction* instruction, binary_data data, int* size)
     return true;
 }
 
-bool assemble_mov(instruction* instruction, binary_data data, int* size)
+static bool assemble_mov(instruction* instruction, binary_data data, int* size)
 {
     *size = 6;
     data = make_instruction_data(data, *size);
@@ -219,13 +224,33 @@ bool assemble_stop(instruction* instruction, binary_data data, int* size)
     return true;
 }
 
+static function functions[] =
+{
+    {INSTRUCTION_STORE, assemble_data_store},
+    {INSTRUCTION_RET, assemble_ret},
+    {INSTRUCTION_MOV, assemble_mov},
+    {INSTRUCTION_STOP, assemble_stop},
+};
+
+static bool call_func(instruction* instruction, binary_data data, int* size)
+{
+    for (int i = 0; i < ARRAY_SIZE(functions); i++)
+    {
+        if (functions[i].type == instruction->type)
+        {
+            check(functions[i].func(instruction, data, size));
+            return true;
+        }
+    }
+    error("Unhandled instruction %d", instruction->type);
+    return false;
+}
+
 bool assemble_structs_to_bytecode(instruction* instructions, binary_data* bytecode)
 {
     validate(bytecode->data == 0, "Invalid input");
     bytecode->len = 1000;
     bytecode->data = calloc(1000, 1);
-    
-    dump_to_hex(bytecode->data, 6);
     
     int len = 0;
     while (instructions)
@@ -235,27 +260,8 @@ bool assemble_structs_to_bytecode(instruction* instructions, binary_data* byteco
         char buffer[20] = {0};
         data.data = (void*)buffer;
         data.len = 20;
-        switch (instructions->type)
-        {
-            case INSTRUCTION_STORE:
-                check(assemble_data_store(instructions, data, &size));
-                break;
-
-            case INSTRUCTION_RET:
-                check(assemble_ret(instructions, data, &size));
-                break;
-
-            case INSTRUCTION_MOV:
-                check(assemble_mov(instructions, data, &size));
-                break;
-                
-            case INSTRUCTION_STOP:
-                check(assemble_stop(instructions, data, &size));
-                break;
-
-            default:
-                error("Unhandled instruction %d", instructions->type);
-        }
+        
+        check (call_func(instructions, data, &size));
 
         memcpy(bytecode->data + len, buffer, size);
         len += size;

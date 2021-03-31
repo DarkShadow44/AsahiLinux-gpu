@@ -128,12 +128,15 @@ static inline void destroy_instruction_list(instruction* list)
 
 bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instructions);
 bool disassemble_structs_to_text(instruction* instructions, binary_data* text, bool print_offsets);
+bool disassemble_bytecode_to_text(binary_data data_bytecode, binary_data* data_text, bool print_offsets);
 
 
 /* assembler */
 
 bool assemble_text_to_structs(binary_data text, instruction** instructions);
 bool assemble_structs_to_bytecode(instruction* instructions, binary_data* bytecode);
+bool assemble_text_to_bytecode(binary_data data_text, binary_data* data_bytecode);
+
 
 /* emulator */
 

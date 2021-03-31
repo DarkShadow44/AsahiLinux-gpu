@@ -5,7 +5,7 @@
 
 enum opcodes
 {
-    OPCODE_STOP = 0x08,
+    OPCODE_STOP = 0x88,
     OPCODE_RET = 0x14,
     OPCODE_STORE = 0x45,
     OPCODE_MOV = 0x62,

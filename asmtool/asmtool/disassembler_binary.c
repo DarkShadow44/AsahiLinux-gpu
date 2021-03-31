@@ -1,7 +1,13 @@
 #include "gpu.h"
 #include "instructions.h"
 
-int64_t GET_BITS64(binary_data data, int start, int end)
+typedef struct _function {
+    int opcode;
+    int mask;
+    bool (*func)(binary_data data, instruction* instruction, int* size);
+} function;
+
+static int64_t GET_BITS64(binary_data data, int start, int end)
 {
     if (end / 8 >= data.len)
     {
@@ -20,12 +26,12 @@ int64_t GET_BITS64(binary_data data, int start, int end)
         value += (int64_t)bytes[i] << (i*8);
     }
     
-    int64_t mask = ~((-1) << (end-start + 1));
+    int64_t mask = ~(((int64_t)-1) << (end-start + 1));
     
     return (value >> start_part) & mask;
 }
 
-int GET_BITS(binary_data data, int start, int end)
+static int GET_BITS(binary_data data, int start, int end)
 {
     return (int)GET_BITS64(data, start, end);
 }
@@ -37,7 +43,7 @@ static binary_data get_instruction_data(binary_data data, int bytes)
     return ret;
 }
 
-operation_src make_memory_offset(int value, int flag_sign1, int flag_sign2)
+static operation_src make_memory_offset(int value, int flag_sign1, int flag_sign2)
 {
     operation_src ret = {0};
     if (flag_sign1)
@@ -61,7 +67,7 @@ operation_src make_memory_offset(int value, int flag_sign1, int flag_sign2)
     return ret;
 }
 
-operation_src make_memory_base(int value, int flag)
+static operation_src make_memory_base(int value, int flag)
 {
     assert((value & 1) == 0);
 
@@ -72,7 +78,7 @@ operation_src make_memory_base(int value, int flag)
     return ret;
 }
 
-operation_src make_memory_reg(int value, int flag)
+static operation_src make_memory_reg(int value, int flag)
 {
     assert((value & 1) == 0);
 
@@ -91,7 +97,7 @@ operation_src make_memory_reg(int value, int flag)
     return ret;
 }
 
-operation_src make_aludst(int value, int flag)
+static operation_src make_aludst(int value, int flag)
 {
     operation_src ret = {0};
    if (flag & 2)
@@ -203,6 +209,37 @@ static bool disassemble_stop(binary_data data, instruction* instruction, int* si
     return true;
 }
 
+static function functions[] =
+{
+    {OPCODE_STORE, 0x7F, disassemble_data_store},
+    {OPCODE_RET, 0x7F, disassemble_ret},
+    {OPCODE_MOV, 0x7F, disassemble_mov},
+    {OPCODE_STOP, 0xFFFF, disassemble_stop},
+};
+
+static bool call_func(binary_data data, instruction* instruction, int* size)
+{
+    int len = 32;
+    if (data.len < 4)
+    {
+        len = data.len * 8;
+    }
+    int opcode = GET_BITS(data, 0, len - 1);
+    
+    for (int i = 0; i < ARRAY_SIZE(functions); i++)
+    {
+        int masked = opcode & functions[i].mask;
+        if (functions[i].opcode == masked)
+        {
+            check(functions[i].func(data, instruction, size));
+            return true;
+        }
+    }
+    error("Unknown opcode 0x%0X", opcode);
+    return false;
+}
+
+
 bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instructions)
 {
     int size;
@@ -214,10 +251,6 @@ bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instruc
     
     while (pos < bytecode.len)
     {
-        binary_data data_opcode;
-        binary_data_sub(bytecode, &data_opcode, pos, 1);
-        int opcode = GET_BITS(data_opcode, 0, 6);
-        
         instruction* instruction = init_instruction();
         if (instruction_last == 0)
         {
@@ -233,23 +266,8 @@ bool disassemble_bytecode_to_structs(binary_data bytecode, instruction** instruc
         binary_data data_instruction;
         binary_data_sub(bytecode, &data_instruction, pos, bytecode.len - pos);
         
-        switch (opcode)
-        {
-            case OPCODE_STORE:
-                check(disassemble_data_store(data_instruction, instruction, &size));
-                break;
-            case OPCODE_RET:
-                check(disassemble_ret(data_instruction, instruction, &size));
-                break;
-            case OPCODE_MOV:
-                check(disassemble_mov(data_instruction, instruction, &size));
-                break;
-            case OPCODE_STOP:
-                check(disassemble_stop(data_instruction, instruction, &size));
-                break;
-            default:
-                error("Unknown opcode %d", opcode);
-        }
+        check(call_func(data_instruction, instruction, &size));
+        
         instruction->original_len = size;
         memcpy(instruction->original_bytes, data_instruction.data, size);
         pos += size;

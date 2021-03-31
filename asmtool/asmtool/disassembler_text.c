@@ -1,6 +1,11 @@
 #include "gpu.h"
 #include "instructions.h"
 
+typedef struct _function {
+    instruction_type type;
+    bool (*func)(instruction* instruction, char* buffer);
+} function;
+
 static bool make_operation_src_(char* buffer, operation_src src, int offset)
 {
     switch (src.type)
@@ -108,6 +113,28 @@ static bool disassemble_stop(instruction* instruction, char* buffer)
     return true;
 }
 
+static function functions[] =
+{
+    {INSTRUCTION_STORE, disassemble_data_store},
+    {INSTRUCTION_RET, disassemble_ret},
+    {INSTRUCTION_MOV, disassemble_mov},
+    {INSTRUCTION_STOP, disassemble_stop},
+};
+
+static bool call_func(instruction* instruction, char* buffer)
+{
+    for (int i = 0; i < ARRAY_SIZE(functions); i++)
+    {
+        if (functions[i].type == instruction->type)
+        {
+            check(functions[i].func(instruction, buffer));
+            return true;
+        }
+    }
+    error("Unhandled instruction %d", instruction->type);
+    return false;
+}
+
 bool disassemble_structs_to_text(instruction* instructions, binary_data* text, bool print_offsets)
 {
     validate(text->data == 0, "");
@@ -121,27 +148,7 @@ bool disassemble_structs_to_text(instruction* instructions, binary_data* text, b
     
     while (instructions)
     {
-        switch (instructions->type)
-        {
-            case INSTRUCTION_STORE:
-                check(disassemble_data_store(instructions, buffer));
-                break;
-            
-            case INSTRUCTION_RET:
-                check(disassemble_ret(instructions, buffer));
-                break;
-                
-            case INSTRUCTION_MOV:
-                check(disassemble_mov(instructions, buffer));
-                break;
-                
-            case INSTRUCTION_STOP:
-                check(disassemble_stop(instructions, buffer));
-                break;
-                
-            default:
-                error("Unhandled instruction %d", instructions->type);
-        }
+        check(call_func(instructions, buffer));
         
         char line[200];
         if (print_offsets)

@@ -120,5 +120,6 @@ static bool test_basic(void)
 bool run_tests(void)
 {
     check(test_basic());
+    printf("Tests finished!\n");
     return true;
 }
