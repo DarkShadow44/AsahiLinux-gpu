@@ -17,12 +17,12 @@ int64_t GET_BITS64(binary_data data, int start, int end)
     
     // Extract up to 7 bytes of data
     int64_t value = 0;
-    for (int i = 0; i < 7 && i < data.len; i++)
+    for (int i = 0; i < 7 && i < data.len - start_full; i++)
     {
         value += (int64_t)bytes[i] << (i*8);
     }
     
-    int64_t mask = ~(((int64_t)-1) << (end-start + 1));
+    uint64_t mask = ~(((uint64_t)-1) << (end-start + 1));
     
     return (value >> start_part) & mask;
 }
@@ -48,7 +48,7 @@ void SET_BITS(binary_data data, int start, int end, uint64_t value_new)
     
     // Extract up to 7 bytes of data
     int64_t value = 0;
-    for (int i = 0; i < 7 && i < data.len; i++)
+    for (int i = 0; i < 7 && i < data.len - start_full; i++)
     {
         value += (int64_t)bytes[i] << (i*8);
     }

@@ -11,7 +11,19 @@
 		1F7D38E5260D1E5000A48D1C /* assembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E4260D1E5000A48D1C /* assembler_text.c */; };
 		1F7D38E9260D1E5B00A48D1C /* disassembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */; };
 		1F88B51E260F8D7D00217A68 /* emulator.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F88B51D260F8D7D00217A68 /* emulator.c */; };
-		1FA09EE026152D1C00EB63FB /* libhook.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 1FF293402606A32B00DFF4B3 /* libhook.dylib */; };
+		1FA413492615396E001FCD57 /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FA413482615396E001FCD57 /* Tests.m */; };
+		1FA4135226153A29001FCD57 /* emulator.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F88B51D260F8D7D00217A68 /* emulator.c */; };
+		1FA4135826153A34001FCD57 /* hardware.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2933426069F6100DFF4B3 /* hardware.m */; };
+		1FA4135926153A34001FCD57 /* test.metal in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932326069F1F00DFF4B3 /* test.metal */; };
+		1FA4135B26153A3E001FCD57 /* disassembler_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2933126069F5000DFF4B3 /* disassembler_binary.c */; };
+		1FA4135C26153A3E001FCD57 /* helper.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932D26069F4800DFF4B3 /* helper.c */; };
+		1FA4135D26153A3E001FCD57 /* metallib.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF293512606DC9F00DFF4B3 /* metallib.c */; };
+		1FA4135E26153A3E001FCD57 /* tests.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38DF260C78B800A48D1C /* tests.c */; };
+		1FA4135F26153A3E001FCD57 /* assembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E4260D1E5000A48D1C /* assembler_text.c */; };
+		1FA4136026153A3E001FCD57 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932026069F1500DFF4B3 /* main.c */; };
+		1FA4136126153A3E001FCD57 /* assembler_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932826069F3900DFF4B3 /* assembler_binary.c */; };
+		1FA4136226153A3E001FCD57 /* disassembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */; };
+		1FA4136426153A7A001FCD57 /* libhook.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF293402606A32B00DFF4B3 /* libhook.dylib */; };
 		1FF2932126069F1500DFF4B3 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932026069F1500DFF4B3 /* main.c */; };
 		1FF2932426069F1F00DFF4B3 /* test.metal in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932326069F1F00DFF4B3 /* test.metal */; };
 		1FF2932926069F3900DFF4B3 /* assembler_binary.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FF2932826069F3900DFF4B3 /* assembler_binary.c */; };
@@ -23,17 +35,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		1FA09EE126152D1C00EB63FB /* Embed Libraries */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				1FA09EE026152D1C00EB63FB /* libhook.dylib in Embed Libraries */,
-			);
-			name = "Embed Libraries";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		1FF292F426069DC400DFF4B3 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -51,6 +52,9 @@
 		1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disassembler_text.c; sourceTree = "<group>"; };
 		1F88B51D260F8D7D00217A68 /* emulator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = emulator.c; sourceTree = "<group>"; };
 		1F8E0AFE260C69B300CED54D /* gpu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gpu.h; sourceTree = "<group>"; };
+		1FA413462615396E001FCD57 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FA413482615396E001FCD57 /* Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
+		1FA4134A2615396E001FCD57 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1FF292F626069DC400DFF4B3 /* asmtool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = asmtool; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FF2932026069F1500DFF4B3 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		1FF2932326069F1F00DFF4B3 /* test.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = test.metal; sourceTree = "<group>"; };
@@ -65,6 +69,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1FA413432615396E001FCD57 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FA4136426153A7A001FCD57 /* libhook.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1FF292F326069DC400DFF4B3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -76,10 +88,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1FA413472615396E001FCD57 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				1FA413482615396E001FCD57 /* Tests.m */,
+				1FA4134A2615396E001FCD57 /* Info.plist */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
 		1FF292ED26069DC400DFF4B3 = {
 			isa = PBXGroup;
 			children = (
 				1FF292F826069DC400DFF4B3 /* asmtool */,
+				1FA413472615396E001FCD57 /* Tests */,
 				1FF292F726069DC400DFF4B3 /* Products */,
 				1FF2933F2606A32B00DFF4B3 /* Frameworks */,
 			);
@@ -89,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				1FF292F626069DC400DFF4B3 /* asmtool */,
+				1FA413462615396E001FCD57 /* Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -125,6 +148,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		1FA413452615396E001FCD57 /* Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1FA4134D2615396E001FCD57 /* Build configuration list for PBXNativeTarget "Tests" */;
+			buildPhases = (
+				1FA413422615396E001FCD57 /* Sources */,
+				1FA413432615396E001FCD57 /* Frameworks */,
+				1FA413442615396E001FCD57 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Tests;
+			productName = Tests;
+			productReference = 1FA413462615396E001FCD57 /* Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		1FF292F526069DC400DFF4B3 /* asmtool */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1FF292FD26069DC400DFF4B3 /* Build configuration list for PBXNativeTarget "asmtool" */;
@@ -132,7 +172,6 @@
 				1FF292F226069DC400DFF4B3 /* Sources */,
 				1FF292F326069DC400DFF4B3 /* Frameworks */,
 				1FF292F426069DC400DFF4B3 /* CopyFiles */,
-				1FA09EE126152D1C00EB63FB /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -151,6 +190,9 @@
 			attributes = {
 				LastUpgradeCheck = 1240;
 				TargetAttributes = {
+					1FA413452615396E001FCD57 = {
+						CreatedOnToolsVersion = 12.4;
+					};
 					1FF292F526069DC400DFF4B3 = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -170,11 +212,41 @@
 			projectRoot = "";
 			targets = (
 				1FF292F526069DC400DFF4B3 /* asmtool */,
+				1FA413452615396E001FCD57 /* Tests */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		1FA413442615396E001FCD57 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		1FA413422615396E001FCD57 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FA4136026153A3E001FCD57 /* main.c in Sources */,
+				1FA4135826153A34001FCD57 /* hardware.m in Sources */,
+				1FA4135C26153A3E001FCD57 /* helper.c in Sources */,
+				1FA4135226153A29001FCD57 /* emulator.c in Sources */,
+				1FA4135F26153A3E001FCD57 /* assembler_text.c in Sources */,
+				1FA4135E26153A3E001FCD57 /* tests.c in Sources */,
+				1FA413492615396E001FCD57 /* Tests.m in Sources */,
+				1FA4135926153A34001FCD57 /* test.metal in Sources */,
+				1FA4135B26153A3E001FCD57 /* disassembler_binary.c in Sources */,
+				1FA4135D26153A3E001FCD57 /* metallib.c in Sources */,
+				1FA4136226153A3E001FCD57 /* disassembler_text.c in Sources */,
+				1FA4136126153A3E001FCD57 /* assembler_binary.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1FF292F226069DC400DFF4B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -196,6 +268,38 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		1FA4134B2615396E001FCD57 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Tests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = darkshadow44.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		1FA4134C2615396E001FCD57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Tests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = darkshadow44.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		1FF292FB26069DC400DFF4B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -326,6 +430,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1FA4134D2615396E001FCD57 /* Build configuration list for PBXNativeTarget "Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1FA4134B2615396E001FCD57 /* Debug */,
+				1FA4134C2615396E001FCD57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		1FF292F126069DC400DFF4B3 /* Build configuration list for PBXProject "asmtool" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
