@@ -64,8 +64,6 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
 {
     instruction_data_load_store instr = instruction->data.load_store;
     
-    int count = count_bits(instr.mask);
-    
     uint64_t offset;
     check(get_value(state, instr.memory_offset, &offset));
     
@@ -73,21 +71,26 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
     {
         case FORMAT_I32:
             assert(instr.memory_reg.type == OPERATION_SOURCE_REG32);
-            for (int i = 0; i < count; i++)
+            int pos_reg = 0;
+            for (int i = 0; i < 4; i++)
             {
-                uint64_t value;
-                uint32_t* buffer = (uint32_t*)state->data.buffer0;
-                if (isload)
+                int active_bit = 1 << i;
+                if (instr.mask & active_bit)
                 {
-                    value = buffer[offset + i];
-                    put_value_(state, instr.memory_reg, value, i);
+                    uint64_t value;
+                    uint32_t* buffer = (uint32_t*)state->data.buffer0;
+                    if (isload)
+                    {
+                        value = buffer[offset + i];
+                        put_value_(state, instr.memory_reg, value, pos_reg);
+                    }
+                    else
+                    {
+                        check(get_value_(state, instr.memory_reg, &value, pos_reg));
+                        buffer[offset + i] = (uint32_t)value;
+                    }
+                    pos_reg++;
                 }
-                else
-                {
-                    check(get_value_(state, instr.memory_reg, &value, i));
-                    buffer[offset + i] = (uint32_t)value;
-                }
-                
             }
             break;
         default:

@@ -112,7 +112,7 @@ static bool assemble_data_loadstore(instruction* instruction, binary_data data, 
     make_memory_offset(instr->memory_offset, &offset, &flag_offset_immediate, &flag_offset_signextend);
     
     int shift = 0;
-    while (offset % 2 == 0)
+    while (offset % 2 == 0 && shift < 2)
     {
         shift++;
         offset >>= 1;

@@ -45,6 +45,10 @@ static bool make_memory_reg(char* buffer, operation_src memory_reg, int mask)
     buffer[0] = 0;
     
     int num = count_bits(mask);
+    if (num == 0)
+    {
+        num = 1;
+    }
     for (int i = 0; i < num; i++)
     {
         if (i != 0)
