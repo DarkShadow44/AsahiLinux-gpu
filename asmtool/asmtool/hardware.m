@@ -299,7 +299,7 @@ bool compile_shader_to_metallib(char* sourcecode, binary_data* data)
     return true;
 }
 
-bool get_results_from_gpu(binary_data code, test_output* output)
+bool get_results_from_gpu(binary_data code, test_io* io)
 {
     enable_code_hook(code);
 
@@ -338,10 +338,20 @@ bool get_results_from_gpu(binary_data code, test_output* output)
         return false;
 
     int BUFFER_COUNT = 8;
+    int count = TEST_BUFFER_SIZE;
     id<MTLBuffer> outputBuffers[BUFFER_COUNT];
     for (int i = 0; i < BUFFER_COUNT; i++) {
         outputBuffers[i] = [device newBufferWithLength:TEST_BUFFER_SIZE options:MTLResourceStorageModeShared];
         memset(outputBuffers[i].contents, 0, TEST_BUFFER_SIZE * sizeof(uint32_t));
+        if (i == 0 && io)
+        {
+            for (int simd = 0; simd < count; simd++) {
+                for (int r = 0; r < 4; r++) {
+                    uint32_t *inputs = (uint32_t*)outputBuffers[r/4].contents;
+                    inputs[(r & 3) + (simd * 4)] = io->input0[simd][r];
+                }
+            }
+        }
     }
 
     id<MTLCommandBuffer> commandBuffer = commandQueue.commandBuffer;
@@ -355,7 +365,6 @@ bool get_results_from_gpu(binary_data code, test_output* output)
 
     [encoder setThreadgroupMemoryLength:0x100 atIndex:0];
 
-    int count = TEST_BUFFER_SIZE;
     MTLSize threadgroupsPerGrid = MTLSizeMake(count, 1, 1);
 
     NSUInteger threads = computePipelineState.maxTotalThreadsPerThreadgroup;
@@ -374,12 +383,12 @@ bool get_results_from_gpu(binary_data code, test_output* output)
 
     if (!flag_hardware_init)
     {
-        if (output)
+        if (io)
         {
             for (int simd = 0; simd < count; simd++) {
                 for (int r = 0; r < 4; r++) {
                     uint32_t *outputs = (uint32_t*)outputBuffers[r/4].contents;
-                    output->buffer0[simd][r] = outputs[(r & 3) + (simd * 4)];
+                    io->output0[simd][r] = outputs[(r & 3) + (simd * 4)];
                 }
             }
         }

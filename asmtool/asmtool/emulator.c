@@ -70,7 +70,7 @@ static bool emulate_data_store(emu_state *state, instruction* instructions)
             {
                 uint64_t value;
                 check(get_value_(state, instr.memory_reg, &value, i));
-                uint32_t* buffer =  (uint32_t*)state->data.buffer0;
+                uint32_t* buffer =  (uint32_t*)state->data.output0;
                 buffer[offset + i] = (uint32_t)value;
             }
             break;

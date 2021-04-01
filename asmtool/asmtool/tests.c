@@ -1,12 +1,13 @@
 #include "gpu.h"
 
-static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, int output_expected_len, const char* file, int line)
+static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, int output_expected_len, uint32_t* input, const char* file, int line)
 {
     binary_data bytecode;
     bytecode.data = data;
     bytecode.len = len;
     
-    test_output output_gpu = {0};
+    test_io io_gpu = {0};
+    memcpy(io_gpu.input0, input, 256);
     
     validate(output_expected_len == 256, "Output length is %d\n", output_expected_len);
     
@@ -19,21 +20,22 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
     binary_data data_disassembly = {0};
     check(disassemble_structs_to_text(instructions, &data_disassembly, false));
     
-    check(get_results_from_gpu(bytecode, &output_gpu));
+    check(get_results_from_gpu(bytecode, &io_gpu));
     
     for (int i = 0; i < 16; i++)
     {
         for (int j = 0; j < 4; j++)
         {
             int pos = i + j * 16;
-            if (output_expected[pos] != output_gpu.buffer0[i][j])
+            if (output_expected[pos] != io_gpu.output0[i][j])
             {
-                error_(file, line, "GPU test at %d: Expected %X, got %X\n", pos, output_expected[pos], output_gpu.buffer0[i][j]);
+                error_(file, line, "GPU test at %d: Expected %X, got %X\n", pos, output_expected[pos], io_gpu.output0[i][j]);
             }
         }
     }
     
     emu_state emu_state = {0};
+    memcpy(emu_state.data.input0, input, 256);
     check(emulate_instructions(&emu_state, instructions));
     
     for (int i = 0; i < 16; i++)
@@ -41,9 +43,9 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
         for (int j = 0; j < 4; j++)
         {
             int pos = i + j * 16;
-            if (output_expected[pos] != emu_state.data.buffer0[i][j])
+            if (output_expected[pos] != emu_state.data.output0[i][j])
             {
-                error_(file, line, "Emu test at %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.buffer0[i][j]);
+                error_(file, line, "Emu test at %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.output0[i][j]);
             }
         }
     }
@@ -78,8 +80,16 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
     
     return true;
 }
-#define run_test(data, output_expected) \
-    _run_test(data, sizeof(data), output_expected, sizeof(output_expected), __FILE__, __LINE__)
+#define run_test(data, output_expected, input) \
+    _run_test(data, sizeof(data), output_expected, sizeof(output_expected), input, __FILE__, __LINE__)
+
+static uint32_t input_zero[] =
+{
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
 
 static bool test_basic(void)
 {
@@ -100,7 +110,7 @@ static bool test_basic(void)
         0x88, 0x00                                      // stop
     };
     
-    check(run_test(test1, test1_output));
+    check(run_test(test1, test1_output, input_zero));
     
     return true;
 }
@@ -162,10 +172,34 @@ static bool test_mov(void)
     };
     
     
-     check(run_test(test1, test1_output)); /* Test mov with 32bit register */
-     check(run_test(test2, test2_output)); /* Test mov with 16bit register */
-     check(run_test(test3, test1_output)); /* Test mov with 32bit register and long flag */
-     check(run_test(test4, test2_output)); /* Test mov with 16bit register and long flag */
+     check(run_test(test1, test1_output, input_zero)); /* Test mov with 32bit register */
+     check(run_test(test2, test2_output, input_zero)); /* Test mov with 16bit register */
+     check(run_test(test3, test1_output, input_zero)); /* Test mov with 32bit register and long flag */
+     check(run_test(test4, test2_output, input_zero)); /* Test mov with 16bit register and long flag */
+    
+    return true;
+}
+
+static bool test_load_store(void)
+{
+    uint32_t test1_output[] =
+    {
+        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 100000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
+    unsigned char test1[] = {
+        0x62, 0x19, 0x01, 0x00, 0x00, 0x00,             // mov r6, 1;
+        0x62, 0x1D, 0x02, 0x00, 0x00, 0x00,             // mov r7, 2;
+        0x62, 0x21, 0xA0, 0x86, 0x01, 0x00,             // mov r8, 100000;
+        0x62, 0x25, 0x04, 0x00, 0x00, 0x00,             // mov r9, 4;
+        0x45, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_store i32, 0xF, r6_r7_r8_r9, u0_u1, 4, signed;
+        0x88, 0x00                                      // stop
+    };
+    
+     check(run_test(test1, test1_output, input_zero)); /*  */
     
     return true;
 }
@@ -174,6 +208,7 @@ bool run_tests(void)
 {
     check(test_basic());
     check(test_mov());
+    check(test_load_store());
     printf("Tests finished!\n");
     return true;
 }

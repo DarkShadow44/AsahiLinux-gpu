@@ -65,8 +65,9 @@ bool run_tests(void);
 
 typedef struct _test_output
 {
-    uint32_t buffer0[TEST_BUFFER_SIZE][4];
-} test_output;
+    uint32_t output0[TEST_BUFFER_SIZE][4];
+    uint32_t input0[TEST_BUFFER_SIZE][4];
+} test_io;
 
 int64_t GET_BITS64(binary_data data, int start, int end);
 int GET_BITS(binary_data data, int start, int end);
@@ -75,7 +76,7 @@ void SET_BITS(binary_data data, int start, int end, uint64_t value_new);
 
 /* hardware */
 
-bool get_results_from_gpu(binary_data code, test_output* output);
+bool get_results_from_gpu(binary_data code, test_io* io);
 void hardware_init(void);
 bool compile_shader_to_metallib(char* sourcecode, binary_data* data);
 
@@ -202,7 +203,7 @@ typedef struct _emu_state
 {
     uint32_t reg[256];
     uint32_t uniform[256];
-    test_output data;
+    test_io data;
 } emu_state;
 
 bool emulate_instructions(emu_state *state, instruction* instructions);
