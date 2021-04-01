@@ -94,7 +94,7 @@ static binary_data make_instruction_data(binary_data data, int bytes)
  --------------------------------------------
  */
 
-static bool assemble_data_store(instruction* instruction, binary_data data, int* size)
+static bool assemble_data_loadstore(instruction* instruction, binary_data data, int* size)
 {
     instruction_data_load_store *instr = &instruction->data.load_store;
     
@@ -120,8 +120,6 @@ static bool assemble_data_store(instruction* instruction, binary_data data, int*
     
     make_memory_base(instr->memory_base , &base, &flag_base);
     make_memory_reg(instr->memory_reg, &reg, &flag_reg);
-    
-    SET_BITS(data, 0, 6, OPCODE_STORE);
     
     int format = instr->format;
     SET_BITS(data, 7, 9, format);
@@ -153,6 +151,18 @@ static bool assemble_data_store(instruction* instruction, binary_data data, int*
     SET_BITS(data, 47, 47, 1);
  
     return true;
+}
+
+static bool assemble_data_store(instruction* instruction, binary_data data, int* size)
+{
+    SET_BITS(data, 0, 6, OPCODE_STORE);
+    return assemble_data_loadstore(instruction, data, size);
+}
+
+static bool assemble_data_load(instruction* instruction, binary_data data, int* size)
+{
+    SET_BITS(data, 0, 6, OPCODE_LOAD);
+    return assemble_data_loadstore(instruction, data, size);
 }
 
 static bool assemble_ret(instruction* instruction, binary_data data, int* size)
@@ -220,6 +230,7 @@ bool assemble_stop(instruction* instruction, binary_data data, int* size)
 static function functions[] =
 {
     {INSTRUCTION_STORE, assemble_data_store},
+    {INSTRUCTION_LOAD, assemble_data_load},
     {INSTRUCTION_RET, assemble_ret},
     {INSTRUCTION_MOV, assemble_mov},
     {INSTRUCTION_STOP, assemble_stop},

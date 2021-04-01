@@ -3,10 +3,11 @@
 
 enum opcodes
 {
-    OPCODE_STOP = 0x88,
+    OPCODE_LOAD = 0x05,
     OPCODE_RET = 0x14,
     OPCODE_STORE = 0x45,
     OPCODE_MOV = 0x62,
+    OPCODE_STOP = 0x88,
 };
 
 enum format_load_store

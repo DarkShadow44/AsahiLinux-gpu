@@ -90,7 +90,7 @@ static operation_src make_aludst(int value, int flag)
  --------------------------------------------
  */
 
-static bool disassemble_data_store(binary_data data, instruction* instruction, int* size)
+static bool disassemble_data_loadstore(binary_data data, instruction* instruction, int* size)
 {
     *size = 8;
     data = get_instruction_data(data, *size); // TODO: L flag
@@ -129,7 +129,6 @@ static bool disassemble_data_store(binary_data data, instruction* instruction, i
     
     offset = offset << shift;
     
-    instruction->type = INSTRUCTION_STORE;
     instruction_data_load_store* instr = &instruction->data.load_store;
     instr->memory_offset = make_memory_offset(offset, flag_offset_immediate, flag_offset_signextend);
     instr->memory_base = make_memory_base(base, flag_base);
@@ -137,6 +136,18 @@ static bool disassemble_data_store(binary_data data, instruction* instruction, i
     instr->format = format;
     instr->mask = mask;
     return true;
+}
+
+static bool disassemble_data_load(binary_data data, instruction* instruction, int* size)
+{
+    instruction->type = INSTRUCTION_LOAD;
+    return disassemble_data_loadstore(data, instruction, size);
+}
+
+static bool disassemble_data_store(binary_data data, instruction* instruction, int* size)
+{
+    instruction->type = INSTRUCTION_STORE;
+    return disassemble_data_loadstore(data, instruction, size);
 }
 
 static bool disassemble_ret(binary_data data, instruction* instruction, int* size)
@@ -200,6 +211,7 @@ static bool disassemble_stop(binary_data data, instruction* instruction, int* si
 static function functions[] =
 {
     {OPCODE_STORE, 0x7F, disassemble_data_store},
+    {OPCODE_LOAD, 0x7F, disassemble_data_load},
     {OPCODE_RET, 0x7F, disassemble_ret},
     {OPCODE_MOV, 0x7F, disassemble_mov},
     {OPCODE_STOP, 0xFFFF, disassemble_stop},

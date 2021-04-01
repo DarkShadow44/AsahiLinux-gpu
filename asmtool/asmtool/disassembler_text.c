@@ -75,7 +75,7 @@ static void bytes_to_hex(char* buffer, unsigned char* data, int len)
  --------------------------------------------
  */
 
-static bool disassemble_data_store(instruction* instruction, char* buffer)
+static bool disassemble_data_loadstore(instruction* instruction, char* buffer, const char* mnemonic)
 {
     char buffer_reg[40];
     char buffer_base[40];
@@ -89,9 +89,19 @@ static bool disassemble_data_store(instruction* instruction, char* buffer)
     
     bool flag_signed = instr.memory_offset.flags & OPERATION_FLAG_SIGN_EXTEND;
     
-    sprintf(buffer, "device_store %s, 0x%X, %s, %s, %s, %s", format_names[instr.format], instr.mask, buffer_reg, buffer_base, buffer_offset, flag_signed ? "signed" : "unsigned");
+    sprintf(buffer, "%s %s, 0x%X, %s, %s, %s, %s", mnemonic, format_names[instr.format], instr.mask, buffer_reg, buffer_base, buffer_offset, flag_signed ? "signed" : "unsigned");
     
     return true;
+}
+
+static bool disassemble_data_store(instruction* instruction, char* buffer)
+{
+    return disassemble_data_loadstore(instruction, buffer, "device_store");
+}
+
+static bool disassemble_data_load(instruction* instruction, char* buffer)
+{
+    return disassemble_data_loadstore(instruction, buffer, "device_load");
 }
 
 static bool disassemble_ret(instruction* instruction, char* buffer)
@@ -125,6 +135,7 @@ static bool disassemble_stop(instruction* instruction, char* buffer)
 static function functions[] =
 {
     {INSTRUCTION_STORE, disassemble_data_store},
+    {INSTRUCTION_LOAD, disassemble_data_load},
     {INSTRUCTION_RET, disassemble_ret},
     {INSTRUCTION_MOV, disassemble_mov},
     {INSTRUCTION_STOP, disassemble_stop},

@@ -112,7 +112,7 @@ int main(int argc, const char* argv[]) {
     const char* params_asm[] = {
         "",
         "asm",
-        "mov r9, 0"
+        "device_load i32, 0xF, r6_r7_r8_r9, r17_r18, 4, signed"
     };
     
     const char* params_test[] = {
@@ -129,7 +129,7 @@ int main(int argc, const char* argv[]) {
     if (argc == 1)
     {
         argc = 3;
-        argv = params_test;
+        argv = params_asm;
     }
     
     if (!handle_command(argc, argv))

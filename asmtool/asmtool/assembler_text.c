@@ -106,10 +106,8 @@ static bool make_memory_reg(char* buffer, operation_src* memory_reg, int mask)
  --------------------------------------------
  */
 
-static bool assemble_data_store(char buffer[10][20], instruction* instruction)
+static bool assemble_data_loadstore(char buffer[10][20], instruction* instruction)
 {
-    instruction->type = INSTRUCTION_STORE;
-    
     instruction_data_load_store* instr = &instruction->data.load_store;
     
     instr->format = get_memoryformat(buffer[1]);
@@ -126,6 +124,18 @@ static bool assemble_data_store(char buffer[10][20], instruction* instruction)
     }
     
     return true;
+}
+
+static bool assemble_data_store(char buffer[10][20], instruction* instruction)
+{
+    instruction->type = INSTRUCTION_STORE;
+    return assemble_data_loadstore(buffer, instruction);
+}
+
+static bool assemble_data_load(char buffer[10][20], instruction* instruction)
+{
+    instruction->type = INSTRUCTION_LOAD;
+    return assemble_data_loadstore(buffer, instruction);
 }
 
 static bool assemble_mov(char buffer[10][20], instruction* instruction)
@@ -149,6 +159,7 @@ static bool assemble_stop(char buffer[10][20], instruction* instruction)
 static function functions[] =
 {
     {"device_store", assemble_data_store},
+    {"device_load", assemble_data_load},
     {"mov", assemble_mov},
     {"stop", assemble_stop},
 };
