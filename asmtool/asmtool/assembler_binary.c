@@ -227,6 +227,16 @@ bool assemble_stop(instruction* instruction, binary_data data, int* size)
     return true;
 }
 
+bool assemble_wait(instruction* instruction, binary_data data, int* size)
+{
+    *size = 2;
+    data = make_instruction_data(data, *size);
+    
+    SET_BITS(data, 0, 6, OPCODE_WAIT);
+    
+    return true;
+}
+
 static function functions[] =
 {
     {INSTRUCTION_STORE, assemble_data_store},
@@ -234,6 +244,7 @@ static function functions[] =
     {INSTRUCTION_RET, assemble_ret},
     {INSTRUCTION_MOV, assemble_mov},
     {INSTRUCTION_STOP, assemble_stop},
+    {INSTRUCTION_WAIT, assemble_wait},
 };
 
 static bool call_func(instruction* instruction, binary_data data, int* size)

@@ -156,12 +156,20 @@ static bool assemble_stop(char buffer[10][20], instruction* instruction)
     return true;
 }
 
+static bool assemble_wait(char buffer[10][20], instruction* instruction)
+{
+    instruction->type = INSTRUCTION_WAIT;
+    
+    return true;
+}
+
 static function functions[] =
 {
     {"device_store", assemble_data_store},
     {"device_load", assemble_data_load},
     {"mov", assemble_mov},
     {"stop", assemble_stop},
+    {"wait", assemble_wait},
 };
 
 static bool call_func(char* text, instruction* instruction)

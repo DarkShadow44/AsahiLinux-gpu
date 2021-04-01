@@ -1,5 +1,17 @@
 #include "gpu.h"
 
+static void copy_input(test_io* io, uint32_t* input)
+{
+    for (int i = 0; i < 16; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            int pos = i + j * 16;
+            io->buffer0[i][j] = input[pos];
+        }
+    }
+}
+
 static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, int output_expected_len, uint32_t* input, const char* file, int line)
 {
     binary_data bytecode;
@@ -7,7 +19,7 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
     bytecode.len = len;
     
     test_io io_gpu = {0};
-    memcpy(io_gpu.input0, input, 256);
+    copy_input(&io_gpu, input);
     
     validate(output_expected_len == 256, "Output length is %d\n", output_expected_len);
     
@@ -27,15 +39,15 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
         for (int j = 0; j < 4; j++)
         {
             int pos = i + j * 16;
-            if (output_expected[pos] != io_gpu.output0[i][j])
+            if (output_expected[pos] != io_gpu.buffer0[i][j])
             {
-                error_(file, line, "GPU test at %d: Expected %X, got %X\n", pos, output_expected[pos], io_gpu.output0[i][j]);
+                error_(file, line, "GPU test at %d: Expected %X, got %X\n", pos, output_expected[pos], io_gpu.buffer0[i][j]);
             }
         }
     }
     
     emu_state emu_state = {0};
-    memcpy(emu_state.data.input0, input, 256);
+    copy_input(&emu_state.data, input);
     check(emulate_instructions(&emu_state, instructions));
     
     for (int i = 0; i < 16; i++)
@@ -43,9 +55,9 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
         for (int j = 0; j < 4; j++)
         {
             int pos = i + j * 16;
-            if (output_expected[pos] != emu_state.data.output0[i][j])
+            if (output_expected[pos] != emu_state.data.buffer0[i][j])
             {
-                error_(file, line, "Emu test at %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.output0[i][j]);
+                error_(file, line, "Emu test at %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.buffer0[i][j]);
             }
         }
     }
@@ -182,32 +194,38 @@ static bool test_mov(void)
 
 static bool test_load_store(void)
 {
+    uint32_t test1_input[] =
+    {
+        0, 0x1020, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0x3040, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0x5060, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0x7080, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
     uint32_t test1_output[] =
     {
-        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 100000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0x1020, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0x3040, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0x5060, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0x7080, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
     
     unsigned char test1[] = {
-        0x62, 0x19, 0x01, 0x00, 0x00, 0x00,             // mov r6, 1;
-        0x62, 0x1D, 0x02, 0x00, 0x00, 0x00,             // mov r7, 2;
-        0x62, 0x21, 0xA0, 0x86, 0x01, 0x00,             // mov r8, 100000;
-        0x62, 0x25, 0x04, 0x00, 0x00, 0x00,             // mov r9, 4;
+        0x05, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_load  i32, 0xF, r6_r7_r8_r9, u0_u1, 4, signed;
+        0x38, 0x00,                                     // wait
         0x45, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_store i32, 0xF, r6_r7_r8_r9, u0_u1, 4, signed;
         0x88, 0x00                                      // stop
     };
     
-     check(run_test(test1, test1_output, input_zero)); /*  */
+     check(run_test(test1, test1_input, test1_input)); /* Simple load/store */
     
     return true;
 }
 
 bool run_tests(void)
 {
-    check(test_basic());
-    check(test_mov());
+    //check(test_basic());
+    //check(test_mov());
     check(test_load_store());
     printf("Tests finished!\n");
     return true;

@@ -129,7 +129,7 @@ int main(int argc, const char* argv[]) {
     if (argc == 1)
     {
         argc = 3;
-        argv = params_asm;
+        argv = params_test;
     }
     
     if (!handle_command(argc, argv))

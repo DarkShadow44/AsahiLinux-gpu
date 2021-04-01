@@ -8,6 +8,7 @@ enum opcodes
     OPCODE_STORE = 0x45,
     OPCODE_MOV = 0x62,
     OPCODE_STOP = 0x88,
+    OPCODE_WAIT = 0x38,
 };
 
 enum format_load_store

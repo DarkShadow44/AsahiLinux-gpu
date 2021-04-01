@@ -348,7 +348,7 @@ bool get_results_from_gpu(binary_data code, test_io* io)
             for (int simd = 0; simd < count; simd++) {
                 for (int r = 0; r < 4; r++) {
                     uint32_t *inputs = (uint32_t*)outputBuffers[r/4].contents;
-                    inputs[(r & 3) + (simd * 4)] = io->input0[simd][r];
+                    inputs[(r & 3) + (simd * 4)] = io->buffer0[simd][r];
                 }
             }
         }
@@ -388,7 +388,7 @@ bool get_results_from_gpu(binary_data code, test_io* io)
             for (int simd = 0; simd < count; simd++) {
                 for (int r = 0; r < 4; r++) {
                     uint32_t *outputs = (uint32_t*)outputBuffers[r/4].contents;
-                    io->output0[simd][r] = outputs[(r & 3) + (simd * 4)];
+                    io->buffer0[simd][r] = outputs[(r & 3) + (simd * 4)];
                 }
             }
         }

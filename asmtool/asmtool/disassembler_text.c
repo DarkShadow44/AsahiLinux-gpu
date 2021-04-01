@@ -132,6 +132,13 @@ static bool disassemble_stop(instruction* instruction, char* buffer)
     return true;
 }
 
+static bool disassemble_wait(instruction* instruction, char* buffer)
+{
+    sprintf(buffer, "wait");
+    
+    return true;
+}
+
 static function functions[] =
 {
     {INSTRUCTION_STORE, disassemble_data_store},
@@ -139,6 +146,7 @@ static function functions[] =
     {INSTRUCTION_RET, disassemble_ret},
     {INSTRUCTION_MOV, disassemble_mov},
     {INSTRUCTION_STOP, disassemble_stop},
+    {INSTRUCTION_WAIT, disassemble_wait},
 };
 
 static bool call_func(instruction* instruction, char* buffer)

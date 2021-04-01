@@ -208,6 +208,17 @@ static bool disassemble_stop(binary_data data, instruction* instruction, int* si
     return true;
 }
 
+static bool disassemble_wait(binary_data data, instruction* instruction, int* size)
+{
+    *size = 2;
+    data = get_instruction_data(data, *size);
+    int value = GET_BITS(data, 0, 15);
+    validate(value == OPCODE_WAIT, "");
+    
+    instruction->type = INSTRUCTION_WAIT;
+    return true;
+}
+
 static function functions[] =
 {
     {OPCODE_STORE, 0x7F, disassemble_data_store},
@@ -215,6 +226,7 @@ static function functions[] =
     {OPCODE_RET, 0x7F, disassemble_ret},
     {OPCODE_MOV, 0x7F, disassemble_mov},
     {OPCODE_STOP, 0xFFFF, disassemble_stop},
+    {OPCODE_WAIT, 0x7F, disassemble_wait},
 };
 
 static bool call_func(binary_data data, instruction* instruction, int* size)

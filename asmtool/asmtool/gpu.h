@@ -65,8 +65,7 @@ bool run_tests(void);
 
 typedef struct _test_output
 {
-    uint32_t output0[TEST_BUFFER_SIZE][4];
-    uint32_t input0[TEST_BUFFER_SIZE][4];
+    uint32_t buffer0[TEST_BUFFER_SIZE][4];
 } test_io;
 
 int64_t GET_BITS64(binary_data data, int start, int end);
@@ -95,6 +94,7 @@ typedef enum _instruction_type {
     INSTRUCTION_IMUL,
     INSTRUCTION_RET,
     INSTRUCTION_STOP,
+    INSTRUCTION_WAIT,
 } instruction_type;
 
 typedef enum _operation_src_type
