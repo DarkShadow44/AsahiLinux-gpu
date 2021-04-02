@@ -54,6 +54,20 @@ static bool put_value(emu_state *state, operation_src src, uint64_t value)
     return put_value_(state, src, value, 0);
 }
 
+static float int_to_float32(int64_t value)
+{
+    float ret;
+    memcpy(&ret, &value, 4);
+    return ret;
+}
+
+static int64_t float32_to_int(float value)
+{
+    uint32_t ret;
+    memcpy(&ret, &value, 4);
+    return ret;
+}
+
 /*
  --------------------------------------------
  Actual emulation start
@@ -67,11 +81,55 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
     uint64_t offset;
     check(get_value(state, instr.memory_offset, &offset));
     
+    int pos_reg = 0;
     switch(instr.format)
     {
+        case FORMAT_I8:
+            for (int i = 0; i < 4; i++)
+            {
+                int active_bit = 1 << i;
+                if (instr.mask & active_bit)
+                {
+                    uint64_t value;
+                    uint8_t* buffer = (uint8_t*)state->data.buffer0;
+                    if (isload)
+                    {
+                        value = buffer[offset + i];
+                        put_value_(state, instr.memory_reg, value, pos_reg);
+                    }
+                    else
+                    {
+                        check(get_value_(state, instr.memory_reg, &value, pos_reg));
+                        buffer[offset + i] = (uint8_t)value;
+                    }
+                    pos_reg++;
+                }
+            }
+            break;
+        case FORMAT_I16:
+            for (int i = 0; i < 4; i++)
+            {
+                int active_bit = 1 << i;
+                if (instr.mask & active_bit)
+                {
+                    uint64_t value;
+                    uint16_t* buffer = (uint16_t*)state->data.buffer0;
+                    if (isload)
+                    {
+                        value = buffer[offset + i];
+                        put_value_(state, instr.memory_reg, value, pos_reg);
+                    }
+                    else
+                    {
+                        check(get_value_(state, instr.memory_reg, &value, pos_reg));
+                        buffer[offset + i] = (uint16_t)value;
+                    }
+                    pos_reg++;
+                }
+            }
+            break;
         case FORMAT_I32:
             assert(instr.memory_reg.type == OPERATION_SOURCE_REG32);
-            int pos_reg = 0;
             for (int i = 0; i < 4; i++)
             {
                 int active_bit = 1 << i;
@@ -93,8 +151,32 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
                 }
             }
             break;
+        case FORMAT_U8NORM:
+            assert(instr.memory_reg.type == OPERATION_SOURCE_REG32);
+            for (int i = 0; i < 4; i++)
+            {
+                int active_bit = 1 << i;
+                if (instr.mask & active_bit)
+                {
+                    uint64_t value;
+                    uint8_t* buffer = (uint8_t*)state->data.buffer0;
+                    float power = 0xFF;
+                    if (isload)
+                    {
+                        value = float32_to_int(buffer[offset + i] / power);
+                        put_value_(state, instr.memory_reg, value, pos_reg);
+                    }
+                    else
+                    {
+                        check(get_value_(state, instr.memory_reg, &value, pos_reg));
+                        buffer[offset + i] = (uint32_t)(int_to_float32(value) * power);
+                    }
+                    pos_reg++;
+                }
+            }
+            break;
         default:
-            error("Unhandledformat %d", instr.format);
+            error("Unhandled format %d", instr.format);
     }
     
     return true;

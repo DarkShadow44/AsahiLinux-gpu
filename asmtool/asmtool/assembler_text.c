@@ -78,16 +78,17 @@ static bool make_operation_src(char* text, operation_src* src)
     return true;
 }
 
-static int get_memoryformat(char* format)
+static bool get_memoryformat(char* format, int* value)
 {
     for (int i = 0; i < ARRAY_SIZE(format_names); i++)
     {
         if (!strcmp(format, format_names[i]))
         {
-            return i;
+            *value = i;
+            return true;
         }
     }
-    return -1;
+    error("Unknown format %s\n", format);
 }
 
 // TODO: Sanity check against mask
@@ -110,7 +111,7 @@ static bool assemble_data_loadstore(char buffer[10][20], instruction* instructio
 {
     instruction_data_load_store* instr = &instruction->data.load_store;
     
-    instr->format = get_memoryformat(buffer[1]);
+    check(get_memoryformat(buffer[1], & instr->format));
     instr->mask = (int)strtol(buffer[2], NULL, 16);
     
     check(make_memory_reg(buffer[3], &instr->memory_reg, instr->mask));

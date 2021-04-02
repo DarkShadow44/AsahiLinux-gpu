@@ -202,6 +202,14 @@ static bool test_load_store(void)
         0, 0x7080, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
     
+    uint32_t test5_input[] =
+    {
+        0xF1F2F3F4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF9E0E1E2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xE3E4E5E6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
     uint32_t test1_output[] =
     {
         0, 0x1020, 0x1020, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -226,12 +234,28 @@ static bool test_load_store(void)
         0, 0x7080, 0x1020, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
     
-    uint32_t test4_output[] =
+    uint32_t test5_output[] =
     {
-        0, 0x1020,      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0x3040,      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0x5060,      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0x7080,      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF1F2F3F4, 0xF5F600F8, 0, 0xF8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8,          0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF9E0E1E2,          0, 0, 0xF6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xE3E4E5E6,          0, 0, 0xF5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
+    uint32_t test6_output[] =
+    {
+        0xF1F2F3F4, 0x0000E1E2, 0, 0xE1E2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8, 0xE3E4E5E6, 0,      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF9E0E1E2, 0,          0, 0xE5E6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xE3E4E5E6, 0,          0, 0xE3E4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
+    uint32_t test7_output[] =
+    {
+        0xF1F2F3F4, 0xF5F600F8, 0, 0x3F78F8F9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8,          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF9E0E1E2,          0, 0, 0x3F76F6F7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xE3E4E5E6,          0, 0, 0x3F75F5F6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
     
     unsigned char test1[] = {
@@ -256,24 +280,51 @@ static bool test_load_store(void)
     };
     
     unsigned char test4[] = {
-        0x05, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0x02, 0x00, // device_load  i32, 0x0, r6 u0_u1, 4, signed;
+        0x05, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0x02, 0x00, // device_load  i32, 0x0, r6, u0_u1, 4, signed;
         0x38, 0x00,                                     // wait
         0x45, 0x31, 0x20, 0x0D, 0x00, 0xC8, 0x02, 0x00, // device_store i32, 0x0, r6, u0_u1, 8, signed;
+        0x88, 0x00                                      // stop
+    };
+    
+    unsigned char test5[] = {
+        0x05, 0x30, 0x10, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_load   i8, 0xD, r6_r7_r8_r9, u0_u1,  4, signed;
+        0x38, 0x00,                                     // wait
+        0x45, 0x31, 0x30, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store i32, 0xD, r6_r7_r8_r9, u0_u1, 12, signed;
+        0x45, 0x30, 0x40, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store  i8, 0xD, r6_r7_r8_r9, u0_u1, 16, signed;
+        0x88, 0x00                                      // stop
+    };
+    
+    unsigned char test6[] = {
+        0x85, 0x30, 0x10, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_load  i16, 0xD, r6_r7_r8_r9, u0_u1,  4, signed;
+        0x38, 0x00,                                     // wait
+        0x45, 0x31, 0x30, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store i32, 0xD, r6_r7_r8_r9, u0_u1, 12, signed;
+        0xC5, 0x30, 0x20, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store i16, 0xD, r6_r7_r8_r9, u0_u1,  8, signed;
+        0x88, 0x00                                      // stop
+    };
+    
+    unsigned char test7[] = {
+        0x05, 0x32, 0x10, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_load  u8norm, 0xD, r6_r7_r8_r9, u0_u1,  4, signed;
+        0x38, 0x00,                                     // wait
+        0x45, 0x31, 0x30, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store    i32, 0xD, r6_r7_r8_r9, u0_u1, 12, signed;
+        0x45, 0x32, 0x40, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store u8norm, 0xD, r6_r7_r8_r9, u0_u1, 16, signed;
         0x88, 0x00                                      // stop
     };
     
     check(run_test(test1, test1_output, test1_input)); /* Simple load/store */
     check(run_test(test2, test2_output, test1_input)); /* Mask 0111 -> 1110 */
     check(run_test(test3, test3_output, test1_input)); /* Mask 0001 -> 1000 */
-    check(run_test(test4, test4_output, test1_input)); /* Mask 0000 -> 0000 */
+    check(run_test(test4, test1_input, test1_input)); /* Mask 0000 -> 0000 */
+    check(run_test(test5, test5_output, test5_input)); /* Mask 1101, format i8 */
+    check(run_test(test6, test6_output, test5_input)); /* Mask 1101, format i16 */
+    check(run_test(test7, test7_output, test5_input)); /* Mask 1101, format unorm8 */
     
     return true;
 }
 
 bool run_tests(void)
 {
-    //check(test_basic());
-    //check(test_mov());
+    check(test_basic());
+    check(test_mov());
     check(test_load_store());
     printf("Tests finished!\n");
     return true;
