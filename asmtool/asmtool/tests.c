@@ -313,7 +313,7 @@ static bool test_load_store(void)
     check(run_test(test1, test1_output, test1_input)); /* Simple load/store */
     check(run_test(test2, test2_output, test1_input)); /* Mask 0111 -> 1110 */
     check(run_test(test3, test3_output, test1_input)); /* Mask 0001 -> 1000 */
-    check(run_test(test4, test1_input, test1_input)); /* Mask 0000 -> 0000 */
+    check(run_test(test4, test1_input, test1_input));  /* Mask 0000 -> 0000 */
     check(run_test(test5, test5_output, test5_input)); /* Mask 1101, format i8 */
     check(run_test(test6, test6_output, test5_input)); /* Mask 1101, format i16 */
     check(run_test(test7, test7_output, test5_input)); /* Mask 1101, format unorm8 */

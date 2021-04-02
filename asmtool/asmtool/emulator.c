@@ -68,112 +68,91 @@ static int64_t float32_to_int(float value)
     return ret;
 }
 
+static void set_buffer(emu_state *state, int64_t start, int type_size, uint64_t value)
+{
+    memcpy((char*)state->data.buffer0 + start * type_size, &value, type_size);
+}
+
+static uint32_t get_buffer(emu_state *state, int64_t start, int type_size)
+{
+    uint32_t ret = 0;
+    memcpy(&ret, (char*)state->data.buffer0 + start * type_size, type_size);
+    return ret;
+}
+
 /*
  --------------------------------------------
  Actual emulation start
  --------------------------------------------
  */
 
-static bool emulate_data_loadstore(emu_state *state, instruction* instruction, bool isload)
+typedef int64_t (*loadstore_processor)(int64_t value, bool isload);
+
+static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_load_store instr, bool isload, int type_size, loadstore_processor proc)
 {
-    instruction_data_load_store instr = instruction->data.load_store;
-    
     uint64_t offset;
     check(get_value(state, instr.memory_offset, &offset));
     
     int pos_reg = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        int active_bit = 1 << i;
+        if (instr.mask & active_bit)
+        {
+            if (isload)
+            {
+                uint64_t value = get_buffer(state, offset + i, type_size);
+                if (proc)
+                {
+                    value = proc(value, true);
+                }
+                put_value_(state, instr.memory_reg, value, pos_reg);
+            }
+            else
+            {
+                uint64_t value;
+                check(get_value_(state, instr.memory_reg, &value, pos_reg));
+                if (proc)
+                {
+                    value = proc(value, false);
+                }
+                set_buffer(state, offset + i, type_size, value);
+            }
+            pos_reg++;
+        }
+    }
+    return true;
+}
+
+static int64_t loadstore_processor_unorm8(int64_t value, bool isload)
+{
+    if (isload)
+    {
+        return float32_to_int((float)value / 0xFF);
+    }
+    else
+    {
+        return (uint32_t)(int_to_float32(value) * 0xFF);
+    }
+}
+
+static bool emulate_data_loadstore(emu_state *state, instruction* instruction, bool isload)
+{
+    instruction_data_load_store instr = instruction->data.load_store;
+    
     switch(instr.format)
     {
         case FORMAT_I8:
-            for (int i = 0; i < 4; i++)
-            {
-                int active_bit = 1 << i;
-                if (instr.mask & active_bit)
-                {
-                    uint64_t value;
-                    uint8_t* buffer = (uint8_t*)state->data.buffer0;
-                    if (isload)
-                    {
-                        value = buffer[offset + i];
-                        put_value_(state, instr.memory_reg, value, pos_reg);
-                    }
-                    else
-                    {
-                        check(get_value_(state, instr.memory_reg, &value, pos_reg));
-                        buffer[offset + i] = (uint8_t)value;
-                    }
-                    pos_reg++;
-                }
-            }
+            check(emulate_data_loadstore_helper(state, instr, isload, 1, NULL));
             break;
         case FORMAT_I16:
-            for (int i = 0; i < 4; i++)
-            {
-                int active_bit = 1 << i;
-                if (instr.mask & active_bit)
-                {
-                    uint64_t value;
-                    uint16_t* buffer = (uint16_t*)state->data.buffer0;
-                    if (isload)
-                    {
-                        value = buffer[offset + i];
-                        put_value_(state, instr.memory_reg, value, pos_reg);
-                    }
-                    else
-                    {
-                        check(get_value_(state, instr.memory_reg, &value, pos_reg));
-                        buffer[offset + i] = (uint16_t)value;
-                    }
-                    pos_reg++;
-                }
-            }
+            check(emulate_data_loadstore_helper(state, instr, isload, 2, NULL));
             break;
         case FORMAT_I32:
-            assert(instr.memory_reg.type == OPERATION_SOURCE_REG32);
-            for (int i = 0; i < 4; i++)
-            {
-                int active_bit = 1 << i;
-                if (instr.mask & active_bit)
-                {
-                    uint64_t value;
-                    uint32_t* buffer = (uint32_t*)state->data.buffer0;
-                    if (isload)
-                    {
-                        value = buffer[offset + i];
-                        put_value_(state, instr.memory_reg, value, pos_reg);
-                    }
-                    else
-                    {
-                        check(get_value_(state, instr.memory_reg, &value, pos_reg));
-                        buffer[offset + i] = (uint32_t)value;
-                    }
-                    pos_reg++;
-                }
-            }
+            check(emulate_data_loadstore_helper(state, instr, isload, 4, NULL));
             break;
         case FORMAT_U8NORM:
-            assert(instr.memory_reg.type == OPERATION_SOURCE_REG32);
-            for (int i = 0; i < 4; i++)
-            {
-                int active_bit = 1 << i;
-                if (instr.mask & active_bit)
-                {
-                    uint64_t value;
-                    uint8_t* buffer = (uint8_t*)state->data.buffer0;
-                    float power = 0xFF;
-                    if (isload)
-                    {
-                        value = float32_to_int(buffer[offset + i] / power);
-                        put_value_(state, instr.memory_reg, value, pos_reg);
-                    }
-                    else
-                    {
-                        check(get_value_(state, instr.memory_reg, &value, pos_reg));
-                        buffer[offset + i] = (uint32_t)(int_to_float32(value) * power);
-                    }
-                    pos_reg++;
-                }
-            }
+            check(emulate_data_loadstore_helper(state, instr, isload, 1, loadstore_processor_unorm8));
             break;
         default:
             error("Unhandled format %d", instr.format);
