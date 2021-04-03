@@ -92,12 +92,14 @@ static operation_src make_aludst(int value, int flag)
 
 static bool disassemble_data_loadstore(binary_data data, instruction* instruction, int* size)
 {
+    multibit_info info_format[] = { {7, 9}, {48, 48} };
+    multibit_info info_reg[] = { {10, 15}, {40, 41} };
+    multibit_info info_offset[] = { {20, 23}, {32, 35}, {56, 63} };
+    multibit_info info_base[] = { {16, 19}, {36, 39}};
+
     *size = 8;
     data = get_instruction_data(data, *size); // TODO: L flag
-    int format1 = GET_BITS(data, 7, 9);
-    int reg1 = GET_BITS(data, 10, 15);
-    int base1 = GET_BITS(data, 16, 19);
-    int offset1 = GET_BITS(data, 20, 23);
+    
     int flag_offset_immediate = GET_BITS(data, 24, 24);
     int flag_offset_signextend = GET_BITS(data, 25, 25);
     int u1 = GET_BITS(data, 26, 26);
@@ -105,27 +107,23 @@ static bool disassemble_data_loadstore(binary_data data, instruction* instructio
     int u3 = GET_BITS(data, 28, 29);
     int u2 = GET_BITS(data, 30, 30);
     // int unk1 = GET_BITS(data, 31, 31);
-    int offset2 = GET_BITS(data, 32, 35);
-    int base2 = GET_BITS(data, 36, 39);
-    int reg2 = GET_BITS(data, 40, 41);
     int shift = GET_BITS(data, 42, 43);
     int u4 = GET_BITS(data, 44, 46);
     // int flag_long = GET_BITS(data, 47, 47);
-    int format2 = GET_BITS(data, 48, 48);
     int flag_reg = GET_BITS(data, 49, 49);
     int u5 = GET_BITS(data, 50, 51);
     int mask = GET_BITS(data, 52, 55);
-    int offset3 = GET_BITS(data, 56, 63);
     
     assert(u1 == 1);
+    assert(u2 == 0);
+    assert(u3 == 0);
     assert(u4 == 4);
+    assert(u5 == 0);
  
-    int offset = offset1 + (offset2 << 4) + (offset3 << 8);
-    int reg = reg1 + (reg2 << 6);
-    int base = base1 + (base2 << 4);
-    int format = format1 + (format2 << 3);
-    int u = u1 + (u2 << 1) + (u3 << 2) + (u4 << 4) + (u5 << 7);
-    (void)u; // TODO
+    int offset = GET_BITS_MULTI(data, info_offset);
+    int reg = GET_BITS_MULTI(data, info_reg);
+    int base = GET_BITS_MULTI(data, info_base);
+    int format = GET_BITS_MULTI(data, info_format);
     
     offset = offset << shift;
     
@@ -164,6 +162,9 @@ static bool disassemble_ret(binary_data data, instruction* instruction, int* siz
 
 static bool disassemble_mov(binary_data data, instruction* instruction, int* size)
 {
+    multibit_info info_reg16[] = { {9, 14}, {44, 45} };
+    multibit_info info_reg32[] = { {9, 14}, {60, 61} };
+    
     int flag = GET_BITS(data, 7, 8);
     int flag_long = GET_BITS(data, 15, 15);
     
@@ -174,20 +175,17 @@ static bool disassemble_mov(binary_data data, instruction* instruction, int* siz
         *size += 2;
     }
     data = get_instruction_data(data, *size);
-    int reg1 = GET_BITS(data, 9, 14);
-    int value;
-    int reg2;
+    int value, reg;
     if (flag32)
     {
         value = GET_BITS(data, 16, 47);
-        reg2 = GET_BITS(data, 60, 61);
+        reg = GET_BITS_MULTI(data, info_reg32);
     }
     else
     {
         value = GET_BITS(data, 16, 31);
-        reg2 = GET_BITS(data, 44, 45);
+        reg = GET_BITS_MULTI(data, info_reg16);
     }
-    int reg = reg1 + (reg2 << 6);
     
     instruction->type = INSTRUCTION_MOV;
     instruction_mov* instr = &instruction->data.mov;

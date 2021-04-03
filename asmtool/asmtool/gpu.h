@@ -16,6 +16,12 @@ typedef struct _binary_data
     unsigned int len;
 } binary_data;
 
+typedef struct _multibit_info
+{
+    int start;
+    int end;
+} multibit_info;
+
 bool binary_data_sub(binary_data original, binary_data* data_out, int start, int len);
 
 bool read_file(const char* path, binary_data* data, bool text);
@@ -56,6 +62,20 @@ int count_bits(int value);
 #define ARRAY_SIZE(arr) \
   (sizeof(arr) / sizeof(arr[0]))
 
+int64_t GET_BITS64(binary_data data, int start, int end);
+int GET_BITS(binary_data data, int start, int end);
+void SET_BITS(binary_data data, int start, int end, uint64_t value_new);
+
+int GET_BITS_MULTI_(binary_data data, multibit_info* elements, int len);
+void SET_BITS_MULTI_(binary_data data, multibit_info* elements, uint64_t value_new, int len);
+
+#define GET_BITS_MULTI(data, elements) \
+    GET_BITS_MULTI_(data, elements, ARRAY_SIZE(elements))
+
+#define SET_BITS_MULTI(data, elements, value) \
+    SET_BITS_MULTI_(data, elements, value, ARRAY_SIZE(elements))
+
+
 /* tests */
 
 #define TEST_BUFFER_COUNT 1
@@ -67,10 +87,6 @@ typedef struct _test_output
 {
     uint32_t buffer0[TEST_BUFFER_SIZE][4];
 } test_io;
-
-int64_t GET_BITS64(binary_data data, int start, int end);
-int GET_BITS(binary_data data, int start, int end);
-void SET_BITS(binary_data data, int start, int end, uint64_t value_new);
 
 
 /* hardware */

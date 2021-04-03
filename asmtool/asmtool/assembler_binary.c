@@ -96,6 +96,11 @@ static binary_data make_instruction_data(binary_data data, int bytes)
 
 static bool assemble_data_loadstore(instruction* instruction, binary_data data, int* size)
 {
+    multibit_info info_format[] = { {7, 9}, {48, 48} };
+    multibit_info info_reg[] = { {10, 15}, {40, 41} };
+    multibit_info info_offset[] = { {20, 23}, {32, 35}, {56, 63} };
+    multibit_info info_base[] = { {16, 19}, {36, 39}};
+    
     instruction_data_load_store *instr = &instruction->data.load_store;
     
     *size = 8;
@@ -121,27 +126,17 @@ static bool assemble_data_loadstore(instruction* instruction, binary_data data, 
     make_memory_base(instr->memory_base , &base, &flag_base);
     make_memory_reg(instr->memory_reg, &reg, &flag_reg);
     
-    int format = instr->format;
-    SET_BITS(data, 7, 9, format);
-    format >>= 3;
-    SET_BITS(data, 10, 15, reg);
-    reg >>= 6;
-    SET_BITS(data, 16, 19, base);
-    base >>=4;
-    SET_BITS(data, 20, 23, offset);
-    offset >>=4;
     SET_BITS(data, 24, 24, flag_offset_immediate);
     SET_BITS(data, 25, 25, flag_offset_signextend);
     SET_BITS(data, 27, 27, flag_base);
-    SET_BITS(data, 32, 35, offset);
-    offset >>=4;
-    SET_BITS(data, 36, 39, base);
-    SET_BITS(data, 40, 41, reg);
     SET_BITS(data, 42, 43, shift);
-    SET_BITS(data, 48, 48, format);
     SET_BITS(data, 49, 49, flag_reg);
     SET_BITS(data, 52, 55, instr->mask);
-    SET_BITS(data, 56, 63, offset);
+    
+    SET_BITS_MULTI(data, info_format, instr->format);
+    SET_BITS_MULTI(data, info_reg, reg);
+    SET_BITS_MULTI(data, info_offset, offset);
+    SET_BITS_MULTI(data, info_base, base);
     
     // Unknown
     SET_BITS(data, 26, 26, 1);
@@ -180,6 +175,9 @@ static bool assemble_ret(instruction* instruction, binary_data data, int* size)
 
 static bool assemble_mov(instruction* instruction, binary_data data, int* size)
 {
+    multibit_info info_reg16[] = { {9, 14}, {44, 45} };
+    multibit_info info_reg32[] = { {9, 14}, {60, 61} };
+    
     instruction_mov *instr = &instruction->data.mov;
     
     SET_BITS(data, 0, 6, OPCODE_MOV);
@@ -190,9 +188,6 @@ static bool assemble_mov(instruction* instruction, binary_data data, int* size)
     
     SET_BITS(data, 7, 8, flag);
     
-    SET_BITS(data, 9, 14, reg);
-    reg >>= 6;
-    
     validate(instr->source.type == OPERATION_SOURCE_IMMEDIATE, "");
     int value = instr->source.value_int;
     
@@ -200,14 +195,14 @@ static bool assemble_mov(instruction* instruction, binary_data data, int* size)
     if (instr->dest.type == OPERATION_SOURCE_REG32)
     {
         SET_BITS(data, 16, 47, value);
-        SET_BITS(data, 60, 61, reg);
+        SET_BITS_MULTI(data, info_reg32, reg);
         long_check = GET_BITS(data, 48, 63);
         *size = 6 + (long_check ? 2 : 0);
     }
     else
     {
         SET_BITS(data, 16, 31, value);
-        SET_BITS(data, 44, 45, reg);
+        SET_BITS_MULTI(data, info_reg16, reg);
         long_check = GET_BITS(data, 32, 47);
         *size = 4 + (long_check ? 2 : 0);
     }

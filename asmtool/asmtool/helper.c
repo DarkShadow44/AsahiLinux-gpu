@@ -61,6 +61,33 @@ void SET_BITS(binary_data data, int start, int end, uint64_t value_new)
     }
 }
 
+int GET_BITS_MULTI_(binary_data data, multibit_info* elements, int len)
+{
+    int ret = 0;
+    int pos = 0;
+    
+    for (int i = 0; i < len; i++)
+    {
+        multibit_info* element = &elements[i];
+        int bits = GET_BITS(data, element->start, element->end);
+        int size = element->end - element->start + 1;
+        ret |= bits << pos;
+        pos += size;
+    }
+    
+    return ret;
+}
+void SET_BITS_MULTI_(binary_data data, multibit_info* elements, uint64_t value_new, int len)
+{
+    for (int i = 0; i < len; i++)
+    {
+        multibit_info* element = &elements[i];
+        SET_BITS(data, element->start, element->end, value_new);
+        int size = element->end - element->start + 1;
+        value_new >>= size;
+    }
+}
+
 bool read_file(const char* path, binary_data* data, bool text)
 {
     int offset = text ? 1 : 0;
