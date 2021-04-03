@@ -253,7 +253,7 @@ static bool test_load_store(void)
     uint32_t test7_output[] =
     {
         0xF1F2F3F4, 0xF5F600F8, 0, 0x3F78F8F9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0xF5F6F7F8,          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8,          0, 0,          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0xF9E0E1E2,          0, 0, 0x3F76F6F7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0xE3E4E5E6,          0, 0, 0x3F75F5F6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
@@ -261,9 +261,25 @@ static bool test_load_store(void)
     uint32_t test8_output[] =
     {
         0xF1F2F3F4, 0xF5F600F8, 0, 0xBD810204, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0xF5F6F7F8,          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8,          0, 0,          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0xF9E0E1E2,          0, 0, 0xBDA14285, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0xE3E4E5E6,          0, 0, 0xBDB162C6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
+    uint32_t test9_output[] =
+    {
+        0xF1F2F3F4, 0x0000E1E2, 0, 0x3F61E2E2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8, 0xE3E4E5E6, 0,          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF9E0E1E2,          0, 0, 0x3F65E6E6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xE3E4E5E6,          0, 0, 0x3F63E4E4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
+    uint32_t test10_output[] =
+    {
+        0xF1F2F3F4, 0x0000E1E2, 0, 0xBE70F1E2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8, 0xE3E4E5E6, 0,          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF9E0E1E2,          0, 0, 0xBE50D1A2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xE3E4E5E6,          0, 0, 0xBE60E1C2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
     
     unsigned char test1[] = {
@@ -326,6 +342,22 @@ static bool test_load_store(void)
         0x88, 0x00                                      // stop
     };
     
+    unsigned char test9[] = {
+        0x05, 0x33, 0x10, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_load  u16norm, 0xD, r6_r7_r8_r9, u0_u1,  4, signed;
+        0x38, 0x00,                                     // wait
+        0x45, 0x31, 0x30, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store     i32, 0xD, r6_r7_r8_r9, u0_u1, 12, signed;
+        0x45, 0x33, 0x20, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store u16norm, 0xD, r6_r7_r8_r9, u0_u1, 8, signed;
+        0x88, 0x00                                      // stop
+    };
+    
+    unsigned char test10[] = {
+        0x85, 0x33, 0x10, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_load  s16norm, 0xD, r6_r7_r8_r9, u0_u1,  4, signed;
+        0x38, 0x00,                                     // wait
+        0x45, 0x31, 0x30, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store     i32, 0xD, r6_r7_r8_r9, u0_u1, 12, signed;
+        0xC5, 0x33, 0x20, 0x0D, 0x00, 0xC8, 0xD2, 0x00, // device_store s16norm, 0xD, r6_r7_r8_r9, u0_u1, 8, signed;
+        0x88, 0x00                                      // stop
+    };
+    
     check(run_test(test1, test1_output, test1_input)); /* Simple load/store */
     check(run_test(test2, test2_output, test1_input)); /* Mask 0111 -> 1110 */
     check(run_test(test3, test3_output, test1_input)); /* Mask 0001 -> 1000 */
@@ -334,6 +366,8 @@ static bool test_load_store(void)
     check(run_test(test6, test6_output, test5_input)); /* Mask 1101, format i16 */
     check(run_test(test7, test7_output, test5_input)); /* Mask 1101, format unorm8 */
     check(run_test(test8, test8_output, test5_input)); /* Mask 1101, format s8norm */
+    check(run_test(test9, test9_output, test5_input)); /* Mask 1101, format u16norm */
+    check(run_test(test10, test10_output, test5_input)); /* Mask 1101, format s16norm */
     
     return true;
 }

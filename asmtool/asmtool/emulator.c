@@ -148,6 +148,30 @@ static int64_t loadstore_processor_s8norm(int64_t value, bool isload)
     }
 }
 
+static int64_t loadstore_processor_u16norm(int64_t value, bool isload)
+{
+    if (isload)
+    {
+        return float32_to_int((float)value / 0xFFFF);
+    }
+    else
+    {
+        return int_to_float32(value) * 0xFFFF;
+    }
+}
+
+static int64_t loadstore_processor_s16norm(int64_t value, bool isload)
+{
+    if (isload)
+    {
+        return float32_to_int((float)value / 0x7FFF);
+    }
+    else
+    {
+        return int_to_float32(value) * 0x7FFF;
+    }
+}
+
 static bool emulate_data_loadstore(emu_state *state, instruction* instruction, bool isload)
 {
     instruction_data_load_store instr = instruction->data.load_store;
@@ -168,6 +192,12 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
             break;
         case FORMAT_S8NORM:
             check(emulate_data_loadstore_helper(state, instr, isload, 1, loadstore_processor_s8norm, true));
+            break;
+        case FORMAT_U16NORM:
+            check(emulate_data_loadstore_helper(state, instr, isload, 2, loadstore_processor_u16norm, false));
+            break;
+        case FORMAT_S16NORM:
+            check(emulate_data_loadstore_helper(state, instr, isload, 2, loadstore_processor_s16norm, true));
             break;
         default:
             error("Unhandled format %d", instr.format);
