@@ -6,7 +6,7 @@ typedef struct _function {
     bool (*func)(emu_state *state, instruction* instruction);
 } function;
 
-static bool get_value_(emu_state *state, operation_src src, uint64_t* value, int offset)
+static bool get_value_(emu_state *state, operation_src src, int64_t* value, int offset)
 {
     switch (src.type)
     {
@@ -22,12 +22,12 @@ static bool get_value_(emu_state *state, operation_src src, uint64_t* value, int
     return true;
 }
 
-static bool get_value(emu_state *state, operation_src src, uint64_t* value)
+static bool get_value(emu_state *state, operation_src src, int64_t* value)
 {
     return get_value_(state, src, value, 0);
 }
 
-static bool put_value_(emu_state *state, operation_src src, uint64_t value, int offset)
+static bool put_value_(emu_state *state, operation_src src, int64_t value, int offset)
 {
     uint16_t* ptr16 = (uint16_t*)&state->reg[src.value_int];
     switch (src.type)
@@ -49,7 +49,7 @@ static bool put_value_(emu_state *state, operation_src src, uint64_t value, int 
     return true;
 }
 
-static bool put_value(emu_state *state, operation_src src, uint64_t value)
+static bool put_value(emu_state *state, operation_src src, int64_t value)
 {
     return put_value_(state, src, value, 0);
 }
@@ -68,14 +68,14 @@ static int64_t float32_to_int(float value)
     return ret;
 }
 
-static void set_buffer(emu_state *state, int64_t start, int type_size, uint64_t value)
+static void set_buffer(emu_state *state, int64_t start, int type_size, int64_t value)
 {
     memcpy((char*)state->data.buffer0 + start * type_size, &value, type_size);
 }
 
-static uint32_t get_buffer(emu_state *state, int64_t start, int type_size)
+static int64_t get_buffer(emu_state *state, int64_t start, int type_size, bool issigned)
 {
-    uint32_t ret = 0;
+    int64_t ret = issigned ? -1 : 0;
     memcpy(&ret, (char*)state->data.buffer0 + start * type_size, type_size);
     return ret;
 }
@@ -88,9 +88,9 @@ static uint32_t get_buffer(emu_state *state, int64_t start, int type_size)
 
 typedef int64_t (*loadstore_processor)(int64_t value, bool isload);
 
-static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_load_store instr, bool isload, int type_size, loadstore_processor proc)
+static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_load_store instr, bool isload, int type_size, loadstore_processor proc, bool issigned)
 {
-    uint64_t offset;
+    int64_t offset;
     check(get_value(state, instr.memory_offset, &offset));
     
     int pos_reg = 0;
@@ -101,7 +101,7 @@ static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_loa
         {
             if (isload)
             {
-                uint64_t value = get_buffer(state, offset + i, type_size);
+                int64_t value = get_buffer(state, offset + i, type_size, issigned);
                 if (proc)
                 {
                     value = proc(value, true);
@@ -110,7 +110,7 @@ static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_loa
             }
             else
             {
-                uint64_t value;
+                int64_t value;
                 check(get_value_(state, instr.memory_reg, &value, pos_reg));
                 if (proc)
                 {
@@ -124,7 +124,7 @@ static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_loa
     return true;
 }
 
-static int64_t loadstore_processor_unorm8(int64_t value, bool isload)
+static int64_t loadstore_processor_u8norm(int64_t value, bool isload)
 {
     if (isload)
     {
@@ -132,7 +132,19 @@ static int64_t loadstore_processor_unorm8(int64_t value, bool isload)
     }
     else
     {
-        return (uint32_t)(int_to_float32(value) * 0xFF);
+        return int_to_float32(value) * 0xFF;
+    }
+}
+
+static int64_t loadstore_processor_s8norm(int64_t value, bool isload)
+{
+    if (isload)
+    {
+        return float32_to_int((float)value / 0x7F);
+    }
+    else
+    {
+        return int_to_float32(value) * 0x7F;
     }
 }
 
@@ -143,16 +155,19 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
     switch(instr.format)
     {
         case FORMAT_I8:
-            check(emulate_data_loadstore_helper(state, instr, isload, 1, NULL));
+            check(emulate_data_loadstore_helper(state, instr, isload, 1, NULL, false));
             break;
         case FORMAT_I16:
-            check(emulate_data_loadstore_helper(state, instr, isload, 2, NULL));
+            check(emulate_data_loadstore_helper(state, instr, isload, 2, NULL, false));
             break;
         case FORMAT_I32:
-            check(emulate_data_loadstore_helper(state, instr, isload, 4, NULL));
+            check(emulate_data_loadstore_helper(state, instr, isload, 4, NULL, false));
             break;
         case FORMAT_U8NORM:
-            check(emulate_data_loadstore_helper(state, instr, isload, 1, loadstore_processor_unorm8));
+            check(emulate_data_loadstore_helper(state, instr, isload, 1, loadstore_processor_u8norm, false));
+            break;
+        case FORMAT_S8NORM:
+            check(emulate_data_loadstore_helper(state, instr, isload, 1, loadstore_processor_s8norm, true));
             break;
         default:
             error("Unhandled format %d", instr.format);
@@ -174,7 +189,7 @@ static bool emulate_data_load(emu_state *state, instruction* instruction)
 static bool emulate_mov(emu_state *state, instruction* instruction)
 {
     instruction_mov instr = instruction->data.mov;
-    uint64_t value;
+    int64_t value;
     check(get_value(state, instr.source, &value));
     check(put_value(state, instr.dest, value));
     return true;
