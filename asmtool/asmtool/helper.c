@@ -251,3 +251,18 @@ void dump_disassembly(binary_data data_bytecode)
     destroy_instruction_list(instructions);
     free(data_disassembly.data);
 }
+
+float int_to_float32(int64_t value)
+{
+    float ret;
+    memcpy(&ret, &value, 4);
+    return ret;
+}
+
+int64_t float32_to_int(float value)
+{
+    uint32_t ret;
+    memcpy(&ret, &value, 4);
+    return ret;
+}
+

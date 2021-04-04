@@ -2,6 +2,60 @@
 #include "instructions.h"
 #include "flexfloat.h"
 
+/* Start source https://cgit.freedesktop.org/mesa/mesa/tree/src/util/format_srgb.h */
+
+/************************************************************************
+ *
+ * Copyright 2010 VMware, Inc.
+ * All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ */
+
+static float util_format_srgb_to_linear_float(float cs)
+{
+   if (cs <= 0.0f)
+      return 0.0f;
+   else if (cs <= 0.04045f)
+      return cs / 12.92f;
+   else if (cs < 1.0f)
+      return powf((cs + 0.055) / 1.055f, 2.4f);
+   else
+      return 1.0f;
+}
+
+static float util_format_linear_to_srgb_float(float cl)
+{
+   if (cl <= 0.0f)
+      return 0.0f;
+   else if (cl < 0.0031308f)
+      return 12.92f * cl;
+   else if (cl < 1.0f)
+      return 1.055f * powf(cl, 0.41666f) - 0.055f;
+   else
+      return 1.0f;
+}
+
+/* End source */
+
 typedef struct _function {
     instruction_type type;
     bool (*func)(emu_state* state, instruction* instruction);
@@ -53,20 +107,6 @@ static bool put_value_(emu_state* state, operation_src src, int64_t value, int o
 static bool put_value(emu_state* state, operation_src src, int64_t value)
 {
     return put_value_(state, src, value, 0);
-}
-
-static float int_to_float32(int64_t value)
-{
-    float ret;
-    memcpy(&ret, &value, 4);
-    return ret;
-}
-
-static int64_t float32_to_int(float value)
-{
-    uint32_t ret;
-    memcpy(&ret, &value, 4);
-    return ret;
 }
 
 static void set_buffer(emu_state *state, int64_t start, int type_size, int64_t value)
@@ -265,7 +305,7 @@ static int64_t loadstore_processor_rgb11b10f(int64_t value, bool isload, int ind
     else
     {
         ff_init_float(&floaty, int_to_float32(value), desc);
-        uint32_t bits = flexfloat_get_bits(&floaty);
+        uint32_t bits = flexfloat_get_bits(&floaty) + 1;
         switch (index)
         {
             case 0: // R
@@ -277,6 +317,23 @@ static int64_t loadstore_processor_rgb11b10f(int64_t value, bool isload, int ind
         }
     }
     assert(0);
+}
+
+static int64_t loadstore_processor_srgb8(int64_t value, bool isload, int index)
+{
+    if (index == 3)
+    {
+        return loadstore_processor_u8norm(value, isload, index);
+    }
+    
+    if (isload)
+    {
+        return float32_to_int(util_format_srgb_to_linear_float((float)value / 0xFF));
+    }
+    else
+    {
+        return util_format_linear_to_srgb_float(int_to_float32(value)) * 0xFF;
+    }
 }
 
 static bool emulate_data_loadstore(emu_state* state, instruction* instruction, bool isload)
@@ -312,8 +369,9 @@ static bool emulate_data_loadstore(emu_state* state, instruction* instruction, b
         case FORMAT_RG11B10F:
             check(emulate_data_loadstore_helper_packed(state, instr, isload, loadstore_processor_rgb11b10f, 3));
             break;
-
-        case FORMAT_SRGBA8: // TODO!
+        case FORMAT_SRGBA8:
+            check(emulate_data_loadstore_helper(state, instr, isload, 1, loadstore_processor_srgb8, false));
+            break;
         default:
             error("Unhandled format %d", instr.format);
     }

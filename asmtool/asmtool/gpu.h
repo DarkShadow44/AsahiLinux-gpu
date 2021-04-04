@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 typedef struct _binary_data
 {
@@ -75,6 +76,8 @@ void SET_BITS_MULTI_(binary_data data, multibit_info* elements, uint64_t value_n
 #define SET_BITS_MULTI(data, elements, value) \
     SET_BITS_MULTI_(data, elements, value, ARRAY_SIZE(elements))
 
+float int_to_float32(int64_t value);
+int64_t float32_to_int(float value);
 
 /* tests */
 

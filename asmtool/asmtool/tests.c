@@ -12,7 +12,22 @@ static void copy_input(test_io* io, uint32_t* input)
     }
 }
 
-static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, int output_expected_len, uint32_t* input, const char* file, int line)
+static bool array_contains(int* float_indices, int index)
+{
+    if (!float_indices)
+        return false;
+    
+    while (*float_indices)
+    {
+        if (*float_indices == index)
+            return true;
+        float_indices++;
+    }
+    
+    return false;
+}
+
+static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, int output_expected_len, uint32_t* input, const char* file, int line, int* float_indices)
 {
     binary_data bytecode;
     bytecode.data = data;
@@ -57,7 +72,21 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
             int pos = i + j * 16;
             if (output_expected[pos] != emu_state.data.buffer0[i][j])
             {
-                error_(file, line, "Emu test at %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.buffer0[i][j]);
+                bool err = true;
+                if (array_contains(float_indices, pos))
+                {
+                    float float_expected = int_to_float32(output_expected[pos]);
+                    float float_real = int_to_float32(emu_state.data.buffer0[i][j]);
+                    float diff = fabsf(float_expected - float_real);
+                    if (diff > 0.0001)
+                    {
+                        error_(file, line, "Emu test at %d: Expected %f, got %f\n", pos, float_expected, float_real);
+                    }
+                }
+                else
+                {
+                    error_(file, line, "Emu test at %d: Expected %X, got %X\n", pos, output_expected[pos], emu_state.data.buffer0[i][j]);
+                }
             }
         }
     }
@@ -93,7 +122,10 @@ static bool _run_test(unsigned char* data, int len, uint32_t* output_expected, i
     return true;
 }
 #define run_test(data, output_expected, input) \
-    _run_test(data, sizeof(data), output_expected, sizeof(output_expected), input, __FILE__, __LINE__)
+    _run_test(data, sizeof(data), output_expected, sizeof(output_expected), input, __FILE__, __LINE__, NULL)
+
+#define run_test_float(data, output_expected, input, floats) \
+    _run_test(data, sizeof(data), output_expected, sizeof(output_expected), input, __FILE__, __LINE__, floats)
 
 static uint32_t input_zero[] =
 {
@@ -306,6 +338,16 @@ static bool test_load_store(void)
         0xE3E4E5E6,          0, 0, 0x00000004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
     
+    uint32_t test13_output[] =
+    {
+        0xF1F2F3F4, 0xF5F6F7F8, 0, 0x3F704F05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8,          0, 0, 0x3F6E1EE2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF9E0E1E2,          0, 0, 0x3F6BEEBF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xE3E4E5E6,          0, 0, 0x3F75F5F6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
+    int test13_floats[] = {3, 19, 35, 0};
+    
     unsigned char test1[] = {
         0x05, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_load  i32, 0xF, r6_r7_r8_r9, u0_u1, 4, signed;
         0x38, 0x00,                                     // wait
@@ -399,6 +441,14 @@ static bool test_load_store(void)
         0x88, 0x00                                      // stop
     };
     
+    unsigned char test13[] = {
+        0x05, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0xF3, 0x00, // device_load  srgb8, 0xF, r6_r7_r8_r9, u0_u1,  4, signed;
+        0x38, 0x00,                                     // wait
+        0x45, 0x31, 0x30, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_store   i32, 0xF, r6_r7_r8_r9, u0_u1, 12, signed;
+        0x45, 0x31, 0x40, 0x0D, 0x00, 0xC8, 0xF3, 0x00, // device_store srgb8, 0xF, r6_r7_r8_r9, u0_u1, 16, signed;
+        0x88, 0x00                                      // stop
+    };
+    
     check(run_test(test1, test1_output, test1_input)); /* Simple load/store */
     check(run_test(test2, test2_output, test1_input)); /* Mask 0111 -> 1110 */
     check(run_test(test3, test3_output, test1_input)); /* Mask 0001 -> 1000 */
@@ -411,6 +461,7 @@ static bool test_load_store(void)
     check(run_test(test10, test10_output, test5_input)); /* Mask 1101, format s16norm */
     check(run_test(test11, test11_output, test5_input)); /* Mask 0000, format rgb10a2 */
     check(run_test(test12, test12_output, test12_input)); /* Mask 0000, format rg11b10f */
+    check(run_test_float(test13, test13_output, test5_input, test13_floats)); /* Mask 1111, format srgb8 */
     
     return true;
 }
