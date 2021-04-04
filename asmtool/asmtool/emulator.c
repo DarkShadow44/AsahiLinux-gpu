@@ -87,6 +87,7 @@ static int64_t get_buffer(emu_state *state, int64_t start, int type_size, bool i
  */
 
 typedef int64_t (*loadstore_processor)(int64_t value, bool isload);
+typedef int64_t (*loadstore_processor_packed)(int64_t value, bool isload, int index);
 
 static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_load_store instr, bool isload, int type_size, loadstore_processor proc, bool issigned)
 {
@@ -120,6 +121,35 @@ static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_loa
             }
             pos_reg++;
         }
+    }
+    return true;
+}
+
+static bool emulate_data_loadstore_helper_packed(emu_state *state, instruction_data_load_store instr, bool isload, loadstore_processor_packed proc)
+{
+    int64_t offset;
+    check(get_value(state, instr.memory_offset, &offset));
+
+    if (isload)
+    {
+        int64_t value = get_buffer(state, offset / 4, 4, false);
+        for (int i = 0; i < 4; i++)
+        {
+            int64_t value2 = proc(value, true, i);
+            put_value_(state, instr.memory_reg, value2, i);
+        }
+    }
+    else
+    {
+        int64_t value = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            int64_t value2;
+            check(get_value_(state, instr.memory_reg, &value2, i));
+            value2 = proc(value2, false, i);
+            value |= value2;
+        }
+        set_buffer(state, offset / 4, 4, value);
     }
     return true;
 }
@@ -172,6 +202,39 @@ static int64_t loadstore_processor_s16norm(int64_t value, bool isload)
     }
 }
 
+static int64_t bitextract(int64_t value, int64_t mask, int shift, bool isload)
+{
+    if (isload)
+    {
+        int64_t temp = (value >> shift) & mask;
+        return float32_to_int((float)temp / mask);
+    }
+    else
+    {
+        int64_t temp = int_to_float32(value) * mask;
+        return (temp & mask) << shift;
+    }
+}
+
+static int64_t loadstore_processor_rgb10a2(int64_t value, bool isload, int index)
+{
+    assert(index >= 0 && index <= 3);
+    
+    switch (index)
+    {
+        case 0: // R
+            return bitextract(value, 0x3FF, 0, isload);
+        case 1: // G
+            return bitextract(value, 0x3FF, 10, isload);
+        case 2: // B
+            return bitextract(value, 0x3FF, 20, isload);
+        case 3: // A
+            return bitextract(value, 0x3, 30, isload);
+        default:
+            assert(0);
+    }
+}
+
 static bool emulate_data_loadstore(emu_state *state, instruction* instruction, bool isload)
 {
     instruction_data_load_store instr = instruction->data.load_store;
@@ -198,6 +261,8 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
             break;
         case FORMAT_S16NORM:
             check(emulate_data_loadstore_helper(state, instr, isload, 2, loadstore_processor_s16norm, true));
+        case FORMAT_RGB10A2:
+            check(emulate_data_loadstore_helper_packed(state, instr, isload, loadstore_processor_rgb10a2));
             break;
         default:
             error("Unhandled format %d", instr.format);
