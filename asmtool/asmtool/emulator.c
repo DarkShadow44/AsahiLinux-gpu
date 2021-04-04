@@ -159,6 +159,7 @@ typedef struct _function {
 
 static bool get_value_(emu_state *state, operation_src src, int64_t* value, int offset)
 {
+    uint16_t* ptr16 = (uint16_t*)&state->reg[src.value_int] + offset;
     switch (src.type)
     {
         case OPERATION_SOURCE_IMMEDIATE:
@@ -166,6 +167,12 @@ static bool get_value_(emu_state *state, operation_src src, int64_t* value, int 
             break;
         case OPERATION_SOURCE_REG32:
             *value = state->reg[src.value_int + offset];
+            break;
+        case OPERATION_SOURCE_REG16H:
+            *value = ptr16[1];
+            break;
+        case OPERATION_SOURCE_REG16L:
+            *value = ptr16[0];
             break;
         default:
             error("Unhandled src %d", src.type);
@@ -180,7 +187,7 @@ static bool get_value(emu_state* state, operation_src src, int64_t* value)
 
 static bool put_value_(emu_state* state, operation_src src, int64_t value, int offset)
 {
-    uint16_t* ptr16 = (uint16_t*)&state->reg[src.value_int];
+    uint16_t* ptr16 = (uint16_t*)&state->reg[src.value_int] + offset;
     switch (src.type)
     {
         case OPERATION_SOURCE_IMMEDIATE:
@@ -445,6 +452,16 @@ static bool emulate_data_loadstore(emu_state* state, instruction* instruction, b
             check(emulate_data_loadstore_helper(state, instr, isload, 2, NULL, false));
             break;
         case FORMAT_I32:
+            if (instr.memory_reg.type == OPERATION_SOURCE_REG16L || instr.memory_reg.type == OPERATION_SOURCE_REG16H)
+            {
+                operation_src reg = instr.memory_reg;
+                reg.type = OPERATION_SOURCE_REG32;
+                put_value_(state, reg, 0, 0);
+                put_value_(state, reg, 0, 1);
+                put_value_(state, reg, 0, 2);
+                put_value_(state, reg, 0, 3);
+                return true;
+            }
             check(emulate_data_loadstore_helper(state, instr, isload, 4, NULL, false));
             break;
         case FORMAT_U8NORM:

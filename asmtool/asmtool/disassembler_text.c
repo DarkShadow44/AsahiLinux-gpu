@@ -11,10 +11,24 @@ static bool make_operation_src_(char* buffer, operation_src src, int offset)
     switch (src.type)
     {
         case OPERATION_SOURCE_REG16L:
-            sprintf(buffer, "r%dl", src.value_int + offset);
+            if (offset % 2 == 0)
+            {
+                sprintf(buffer, "r%dl", src.value_int + offset / 2);
+            }
+            else
+            {
+                sprintf(buffer, "r%dh", src.value_int + offset / 2);
+            }
             break;
         case OPERATION_SOURCE_REG16H:
-            sprintf(buffer, "r%dh", src.value_int + offset);
+            if (offset % 2 == 0)
+            {
+                sprintf(buffer, "r%dh", src.value_int + offset / 2);
+            }
+            else
+            {
+                sprintf(buffer, "r%dl", src.value_int + offset / 2 + 1);
+            }
             break;
         case OPERATION_SOURCE_REG32:
             sprintf(buffer, "r%d", src.value_int + offset);

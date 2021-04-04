@@ -51,8 +51,6 @@ static operation_src make_memory_base(int value, int flag)
 
 static operation_src make_memory_reg(int value, int flag)
 {
-    assert((value & 1) == 0);
-
     operation_src ret = {0};
     if (flag)
     {

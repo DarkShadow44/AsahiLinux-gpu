@@ -54,7 +54,8 @@ static bool make_memory_reg(operation_src src, int* value, int* flag)
     }
     else
     {
-        *value = src.value_int;
+        int or = src.type  == OPERATION_SOURCE_REG16L ? 0 : 1;
+        *value = (src.value_int << 1) | or;
     }
     
     return true;
