@@ -348,6 +348,14 @@ static bool test_load_store(void)
     
     int test13_floats[] = {3, 19, 35, 0};
     
+    uint32_t test14_output[] =
+    {
+        0xF1F2F3F4, 0xF5F6F7F8, 0, 0x46FC0000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF5F6F7F8,          0, 0, 0x46BD8000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xF9E0E1E2,          0, 0, 0x46BE8000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0xE3E4E5E6,          0, 0, 0x00000004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    
     unsigned char test1[] = {
         0x05, 0x31, 0x10, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_load  i32, 0xF, r6_r7_r8_r9, u0_u1, 4, signed;
         0x38, 0x00,                                     // wait
@@ -449,6 +457,15 @@ static bool test_load_store(void)
         0x88, 0x00                                      // stop
     };
     
+    unsigned char test14[] = {
+        0x62, 0x25, 0x04, 0x00, 0x00, 0x00,             // mov r9, 4;
+        0x85, 0x32, 0x10, 0x0D, 0x00, 0xC8, 0x03, 0x00, // device_load  rgb9e5, 0x0, r6_r7_r8_r9, u0_u1,  4, signed;
+        0x38, 0x00,                                     // wait
+        0x45, 0x31, 0x30, 0x0D, 0x00, 0xC8, 0xF2, 0x00, // device_store    i32, 0xF, r6_r7_r8_r9, u0_u1, 12, signed;
+        0xC5, 0x32, 0x40, 0x0D, 0x00, 0xC8, 0x03, 0x00, // device_store rgb9e5, 0x0, r6_r7_r8_r9, u0_u1, 16, signed;
+        0x88, 0x00                                      // stop
+    };
+    
     check(run_test(test1, test1_output, test1_input)); /* Simple load/store */
     check(run_test(test2, test2_output, test1_input)); /* Mask 0111 -> 1110 */
     check(run_test(test3, test3_output, test1_input)); /* Mask 0001 -> 1000 */
@@ -462,6 +479,7 @@ static bool test_load_store(void)
     check(run_test(test11, test11_output, test5_input)); /* Mask 0000, format rgb10a2 */
     check(run_test(test12, test12_output, test12_input)); /* Mask 0000, format rg11b10f */
     check(run_test_float(test13, test13_output, test5_input, test13_floats)); /* Mask 1111, format srgb8 */
+    check(run_test(test14, test14_output, test5_input)); /* Mask 0000, format rgb9e5 */
     
     return true;
 }

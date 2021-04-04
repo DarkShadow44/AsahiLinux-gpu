@@ -56,6 +56,102 @@ static float util_format_linear_to_srgb_float(float cl)
 
 /* End source */
 
+/* Start source https://cgit.freedesktop.org/mesa/mesa/tree/src/util/format_rgb9e5.h */
+
+#define MIN2( A, B )   ( (A)<(B) ? (A) : (B) )
+#define MAX2( A, B )   ( (A)>(B) ? (A) : (B) )
+
+#define MIN3( A, B, C ) ((A) < (B) ? MIN2(A, C) : MIN2(B, C))
+#define MAX3( A, B, C ) ((A) > (B) ? MAX2(A, C) : MAX2(B, C))
+
+
+#define RGB9E5_EXPONENT_BITS          5
+#define RGB9E5_MANTISSA_BITS          9
+#define RGB9E5_EXP_BIAS               15
+#define RGB9E5_MAX_VALID_BIASED_EXP   31
+
+#define MAX_RGB9E5_EXP               (RGB9E5_MAX_VALID_BIASED_EXP - RGB9E5_EXP_BIAS)
+#define RGB9E5_MANTISSA_VALUES       (1<<RGB9E5_MANTISSA_BITS)
+#define MAX_RGB9E5_MANTISSA          (RGB9E5_MANTISSA_VALUES-1)
+#define MAX_RGB9E5                   (((float)MAX_RGB9E5_MANTISSA)/RGB9E5_MANTISSA_VALUES * (1<<MAX_RGB9E5_EXP))
+
+static int rgb9e5_ClampRange(float x)
+{
+   union { float f; uint32_t u; } f, max;
+   f.f = x;
+   max.f = MAX_RGB9E5;
+
+   if (f.u > 0x7f800000)
+  /* catches neg, NaNs */
+      return 0;
+   else if (f.u >= max.u)
+      return max.u;
+   else
+      return f.u;
+}
+
+static uint32_t float3_to_rgb9e5(const float rgb[3])
+{
+   int rm, gm, bm, exp_shared;
+   uint32_t revdenom_biasedexp;
+   union { float f; uint32_t u; } rc, bc, gc, maxrgb, revdenom;
+
+   rc.u = rgb9e5_ClampRange(rgb[0]);
+   gc.u = rgb9e5_ClampRange(rgb[1]);
+   bc.u = rgb9e5_ClampRange(rgb[2]);
+   maxrgb.u = MAX3(rc.u, gc.u, bc.u);
+
+   /*
+    * Compared to what the spec suggests, instead of conditionally adjusting
+    * the exponent after the fact do it here by doing the equivalent of +0.5 -
+    * the int add will spill over into the exponent in this case.
+    */
+   maxrgb.u += maxrgb.u & (1 << (23-9));
+   exp_shared = MAX2((maxrgb.u >> 23), -RGB9E5_EXP_BIAS - 1 + 127) +
+                1 + RGB9E5_EXP_BIAS - 127;
+   revdenom_biasedexp = 127 - (exp_shared - RGB9E5_EXP_BIAS -
+                               RGB9E5_MANTISSA_BITS) + 1;
+   revdenom.u = revdenom_biasedexp << 23;
+   assert(exp_shared <= RGB9E5_MAX_VALID_BIASED_EXP);
+
+   /*
+    * The spec uses strict round-up behavior (d3d10 disagrees, but in any case
+    * must match what is done above for figuring out exponent).
+    * We avoid the doubles ((int) rc * revdenom + 0.5) by doing the rounding
+    * ourselves (revdenom was adjusted by +1, above).
+    */
+   rm = (int) (rc.f * revdenom.f);
+   gm = (int) (gc.f * revdenom.f);
+   bm = (int) (bc.f * revdenom.f);
+   rm = (rm & 1) + (rm >> 1);
+   gm = (gm & 1) + (gm >> 1);
+   bm = (bm & 1) + (bm >> 1);
+
+   assert(rm <= MAX_RGB9E5_MANTISSA);
+   assert(gm <= MAX_RGB9E5_MANTISSA);
+   assert(bm <= MAX_RGB9E5_MANTISSA);
+   assert(rm >= 0);
+   assert(gm >= 0);
+   assert(bm >= 0);
+
+   return (exp_shared << 27) | (bm << 18) | (gm << 9) | rm;
+}
+
+static void rgb9e5_to_float3(uint32_t rgb, float retval[3])
+{
+   int exponent;
+   union { float f; uint32_t u; } scale;
+
+   exponent = (rgb >> 27) - RGB9E5_EXP_BIAS - RGB9E5_MANTISSA_BITS;
+   scale.u = (exponent + 127) << 23;
+
+   retval[0] = ( rgb        & 0x1ff) * scale.f;
+   retval[1] = ((rgb >> 9)  & 0x1ff) * scale.f;
+   retval[2] = ((rgb >> 18) & 0x1ff) * scale.f;
+}
+
+/* End source */
+
 typedef struct _function {
     instruction_type type;
     bool (*func)(emu_state* state, instruction* instruction);
@@ -371,6 +467,34 @@ static bool emulate_data_loadstore(emu_state* state, instruction* instruction, b
             break;
         case FORMAT_SRGBA8:
             check(emulate_data_loadstore_helper(state, instr, isload, 1, loadstore_processor_srgb8, false));
+            break;
+        case FORMAT_RGB9E5:
+            {
+                int64_t offset;
+                check(get_value(state, instr.memory_offset, &offset));
+                
+                if (isload)
+                {
+                    int64_t value = get_buffer(state, offset / 4, 4, false);
+                    float ret[3];
+                    rgb9e5_to_float3((uint32_t)value, ret);
+                    put_value_(state, instr.memory_reg, float32_to_int(ret[0]), 0);
+                    put_value_(state, instr.memory_reg, float32_to_int(ret[1]), 1);
+                    put_value_(state, instr.memory_reg, float32_to_int(ret[2]), 2);
+                }
+                else
+                {
+                    int64_t valueR, valueG, valueB;
+                    check(get_value_(state, instr.memory_reg, &valueR, 0));
+                    check(get_value_(state, instr.memory_reg, &valueG, 1));
+                    check(get_value_(state, instr.memory_reg, &valueB, 2));
+                    
+                    float floats[3] = { int_to_float32(valueR), int_to_float32(valueG), int_to_float32(valueB) };
+                    uint32_t ret = float3_to_rgb9e5(floats);
+
+                    set_buffer(state, offset / 4, 4, ret);
+                }
+            }
             break;
         default:
             error("Unhandled format %d", instr.format);
