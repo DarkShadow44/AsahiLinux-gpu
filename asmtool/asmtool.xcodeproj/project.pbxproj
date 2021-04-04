@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F71E683261955E5008847D4 /* flexfloat.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F71E682261955E5008847D4 /* flexfloat.c */; };
 		1F7D38E0260C78B800A48D1C /* tests.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38DF260C78B800A48D1C /* tests.c */; };
 		1F7D38E5260D1E5000A48D1C /* assembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E4260D1E5000A48D1C /* assembler_text.c */; };
 		1F7D38E9260D1E5B00A48D1C /* disassembler_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */; };
@@ -47,6 +48,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1F71E681261955E5008847D4 /* flexfloat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = flexfloat.h; sourceTree = "<group>"; };
+		1F71E682261955E5008847D4 /* flexfloat.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = flexfloat.c; sourceTree = "<group>"; };
 		1F7D38DF260C78B800A48D1C /* tests.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = tests.c; sourceTree = "<group>"; };
 		1F7D38E4260D1E5000A48D1C /* assembler_text.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = assembler_text.c; sourceTree = "<group>"; };
 		1F7D38E8260D1E5B00A48D1C /* disassembler_text.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disassembler_text.c; sourceTree = "<group>"; };
@@ -133,6 +136,8 @@
 				1FF2933426069F6100DFF4B3 /* hardware.m */,
 				1FF2932326069F1F00DFF4B3 /* test.metal */,
 				1F88B51D260F8D7D00217A68 /* emulator.c */,
+				1F71E681261955E5008847D4 /* flexfloat.h */,
+				1F71E682261955E5008847D4 /* flexfloat.c */,
 			);
 			path = asmtool;
 			sourceTree = "<group>";
@@ -260,6 +265,7 @@
 				1FF2933526069F6100DFF4B3 /* hardware.m in Sources */,
 				1F7D38E9260D1E5B00A48D1C /* disassembler_text.c in Sources */,
 				1FF2932926069F3900DFF4B3 /* assembler_binary.c in Sources */,
+				1F71E683261955E5008847D4 /* flexfloat.c in Sources */,
 				1FF2932426069F1F00DFF4B3 /* test.metal in Sources */,
 				1FF293522606DC9F00DFF4B3 /* metallib.c in Sources */,
 			);

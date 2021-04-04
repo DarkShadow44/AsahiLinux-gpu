@@ -1,9 +1,10 @@
 #include "gpu.h"
 #include "instructions.h"
+#include "flexfloat.h"
 
 typedef struct _function {
     instruction_type type;
-    bool (*func)(emu_state *state, instruction* instruction);
+    bool (*func)(emu_state* state, instruction* instruction);
 } function;
 
 static bool get_value_(emu_state *state, operation_src src, int64_t* value, int offset)
@@ -22,12 +23,12 @@ static bool get_value_(emu_state *state, operation_src src, int64_t* value, int 
     return true;
 }
 
-static bool get_value(emu_state *state, operation_src src, int64_t* value)
+static bool get_value(emu_state* state, operation_src src, int64_t* value)
 {
     return get_value_(state, src, value, 0);
 }
 
-static bool put_value_(emu_state *state, operation_src src, int64_t value, int offset)
+static bool put_value_(emu_state* state, operation_src src, int64_t value, int offset)
 {
     uint16_t* ptr16 = (uint16_t*)&state->reg[src.value_int];
     switch (src.type)
@@ -49,7 +50,7 @@ static bool put_value_(emu_state *state, operation_src src, int64_t value, int o
     return true;
 }
 
-static bool put_value(emu_state *state, operation_src src, int64_t value)
+static bool put_value(emu_state* state, operation_src src, int64_t value)
 {
     return put_value_(state, src, value, 0);
 }
@@ -86,10 +87,9 @@ static int64_t get_buffer(emu_state *state, int64_t start, int type_size, bool i
  --------------------------------------------
  */
 
-typedef int64_t (*loadstore_processor)(int64_t value, bool isload);
-typedef int64_t (*loadstore_processor_packed)(int64_t value, bool isload, int index);
+typedef int64_t (*loadstore_processor)(int64_t value, bool isload, int index);
 
-static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_load_store instr, bool isload, int type_size, loadstore_processor proc, bool issigned)
+static bool emulate_data_loadstore_helper(emu_state* state, instruction_data_load_store instr, bool isload, int type_size, loadstore_processor proc, bool issigned)
 {
     int64_t offset;
     check(get_value(state, instr.memory_offset, &offset));
@@ -105,7 +105,7 @@ static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_loa
                 int64_t value = get_buffer(state, offset + i, type_size, issigned);
                 if (proc)
                 {
-                    value = proc(value, true);
+                    value = proc(value, true, i);
                 }
                 put_value_(state, instr.memory_reg, value, pos_reg);
             }
@@ -115,7 +115,7 @@ static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_loa
                 check(get_value_(state, instr.memory_reg, &value, pos_reg));
                 if (proc)
                 {
-                    value = proc(value, false);
+                    value = proc(value, false, i);
                 }
                 set_buffer(state, offset + i, type_size, value);
             }
@@ -125,7 +125,7 @@ static bool emulate_data_loadstore_helper(emu_state *state, instruction_data_loa
     return true;
 }
 
-static bool emulate_data_loadstore_helper_packed(emu_state *state, instruction_data_load_store instr, bool isload, loadstore_processor_packed proc)
+static bool emulate_data_loadstore_helper_packed(emu_state* state, instruction_data_load_store instr, bool isload, loadstore_processor proc, int rounds)
 {
     int64_t offset;
     check(get_value(state, instr.memory_offset, &offset));
@@ -133,7 +133,7 @@ static bool emulate_data_loadstore_helper_packed(emu_state *state, instruction_d
     if (isload)
     {
         int64_t value = get_buffer(state, offset / 4, 4, false);
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < rounds; i++)
         {
             int64_t value2 = proc(value, true, i);
             put_value_(state, instr.memory_reg, value2, i);
@@ -142,7 +142,7 @@ static bool emulate_data_loadstore_helper_packed(emu_state *state, instruction_d
     else
     {
         int64_t value = 0;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < rounds; i++)
         {
             int64_t value2;
             check(get_value_(state, instr.memory_reg, &value2, i));
@@ -154,7 +154,7 @@ static bool emulate_data_loadstore_helper_packed(emu_state *state, instruction_d
     return true;
 }
 
-static int64_t loadstore_processor_u8norm(int64_t value, bool isload)
+static int64_t loadstore_processor_u8norm(int64_t value, bool isload, int index)
 {
     if (isload)
     {
@@ -166,7 +166,7 @@ static int64_t loadstore_processor_u8norm(int64_t value, bool isload)
     }
 }
 
-static int64_t loadstore_processor_s8norm(int64_t value, bool isload)
+static int64_t loadstore_processor_s8norm(int64_t value, bool isload, int index)
 {
     if (isload)
     {
@@ -178,7 +178,7 @@ static int64_t loadstore_processor_s8norm(int64_t value, bool isload)
     }
 }
 
-static int64_t loadstore_processor_u16norm(int64_t value, bool isload)
+static int64_t loadstore_processor_u16norm(int64_t value, bool isload, int index)
 {
     if (isload)
     {
@@ -190,7 +190,7 @@ static int64_t loadstore_processor_u16norm(int64_t value, bool isload)
     }
 }
 
-static int64_t loadstore_processor_s16norm(int64_t value, bool isload)
+static int64_t loadstore_processor_s16norm(int64_t value, bool isload, int index)
 {
     if (isload)
     {
@@ -235,7 +235,51 @@ static int64_t loadstore_processor_rgb10a2(int64_t value, bool isload, int index
     }
 }
 
-static bool emulate_data_loadstore(emu_state *state, instruction* instruction, bool isload)
+static int64_t loadstore_processor_rgb11b10f(int64_t value, bool isload, int index)
+{
+    assert(index >= 0 && index <= 2);
+    
+    flexfloat_t floaty;
+    flexfloat_desc_t desc = {5, index == 2 ? 5 : 6};
+    
+    if (isload)
+    {
+        uint32_t extracted = 0;
+        ff_init(&floaty, desc);
+        switch (index)
+        {
+            case 0: // R
+                extracted = value & 0x7FF;
+                break;
+            case 1: // G
+                extracted = (value >> 11) & 0x7FF;
+                break;
+            case 2: // B
+                extracted = (value >> 22) & 0x3FF;
+                break;
+        }
+        flexfloat_set_bits(&floaty, extracted);
+        float ret = ff_get_float(&floaty);
+        return float32_to_int(ret);
+    }
+    else
+    {
+        ff_init_float(&floaty, int_to_float32(value), desc);
+        uint32_t bits = flexfloat_get_bits(&floaty);
+        switch (index)
+        {
+            case 0: // R
+                return bits & 0x7FF;
+            case 1: // G
+                return (bits & 0x7FF) << 11;
+            case 2: // B
+                return (bits & 0x3FF) << 22;
+        }
+    }
+    assert(0);
+}
+
+static bool emulate_data_loadstore(emu_state* state, instruction* instruction, bool isload)
 {
     instruction_data_load_store instr = instruction->data.load_store;
     
@@ -261,9 +305,15 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
             break;
         case FORMAT_S16NORM:
             check(emulate_data_loadstore_helper(state, instr, isload, 2, loadstore_processor_s16norm, true));
-        case FORMAT_RGB10A2:
-            check(emulate_data_loadstore_helper_packed(state, instr, isload, loadstore_processor_rgb10a2));
             break;
+        case FORMAT_RGB10A2:
+            check(emulate_data_loadstore_helper_packed(state, instr, isload, loadstore_processor_rgb10a2, 4));
+            break;
+        case FORMAT_RG11B10F:
+            check(emulate_data_loadstore_helper_packed(state, instr, isload, loadstore_processor_rgb11b10f, 3));
+            break;
+
+        case FORMAT_SRGBA8: // TODO!
         default:
             error("Unhandled format %d", instr.format);
     }
@@ -271,17 +321,17 @@ static bool emulate_data_loadstore(emu_state *state, instruction* instruction, b
     return true;
 }
 
-static bool emulate_data_store(emu_state *state, instruction* instruction)
+static bool emulate_data_store(emu_state* state, instruction* instruction)
 {
     return emulate_data_loadstore(state, instruction, false);
 }
 
-static bool emulate_data_load(emu_state *state, instruction* instruction)
+static bool emulate_data_load(emu_state* state, instruction* instruction)
 {
     return emulate_data_loadstore(state, instruction, true);
 }
 
-static bool emulate_mov(emu_state *state, instruction* instruction)
+static bool emulate_mov(emu_state* state, instruction* instruction)
 {
     instruction_mov instr = instruction->data.mov;
     int64_t value;
@@ -290,7 +340,7 @@ static bool emulate_mov(emu_state *state, instruction* instruction)
     return true;
 }
 
-static bool emulate_wait(emu_state *state, instruction* instruction)
+static bool emulate_wait(emu_state* state, instruction* instruction)
 {
     return true;
 }
@@ -303,7 +353,7 @@ static function functions[] =
     {INSTRUCTION_WAIT, emulate_wait},
 };
 
-static bool call_func(emu_state *state, instruction* instruction)
+static bool call_func(emu_state* state, instruction* instruction)
 {
     for (int i = 0; i < ARRAY_SIZE(functions); i++)
     {
@@ -317,7 +367,7 @@ static bool call_func(emu_state *state, instruction* instruction)
     return false;
 }
 
-bool emulate_instructions(emu_state *state, instruction* instructions)
+bool emulate_instructions(emu_state* state, instruction* instructions)
 {
     validate(state->reg[0] == 0, "");
     
